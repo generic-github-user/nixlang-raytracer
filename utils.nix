@@ -35,4 +35,9 @@ rec {
     # volume = 
   };
   Sphere = pos: radius: { pos = pos; radius = radius; };
+
+  # isPoint =
+  pointToList = builtins.attrValues;
+  listToPoint = xs: builtins.listToAttrs (map ({fst, snd}: {name = fst; value = snd;})
+    (lib.zipLists ["x" "y" "z"] xs));
 }
