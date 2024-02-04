@@ -16,4 +16,27 @@ rec {
     };
     samples = 1;
   };
+  objects = with utils; [
+    {
+      # geometry.faces = map (i: ) [0 1 2];
+      geometry = Cube (Point 1 1 0) 1.5;
+      # geometry = Cube (Point 0 0 0) 1;
+
+      material.reflectiveness = 0.8;
+      material.diffusion = 0.5;
+      material.opacity = 1.0;
+      type = "object";
+
+      # test = UnitSquare;
+      # test = addPoints (Point 1 2 3) (Point 4 5 6);
+      test = cross (Point 0.7 0 0) (Point 1 1 0);
+      # visibleFromCamera
+    }
+    {
+      position = Point 2 2 3;
+      radius = 0.1;
+      brightness = 1;
+      type = "light";
+    }
+  ];
 }
