@@ -23,6 +23,9 @@ rec {
     map (addPoints d) (iterate rot90 4 d);
   # Square = pos: size: (translate pos) (scale size) UnitSquare;
 
+  Triangle = xs: builtins.listToAttrs (map ({fst, snd}: {name = fst; value = snd;})
+    (lib.zipLists ["a" "b" "c"] xs));
+
   # Cube :: Point3D -> Number -> Geometry
   Cube = pos: size: compose (translate pos) (scale size) {
     # faces = map (mapPoints (liftPoint) (Square pos size)) [0 1 2];
@@ -63,6 +66,9 @@ rec {
 
   Ok = x: { ok = true; value = x; };
   Error = err: { ok = false; error = err; };
+
+  Some = x: { some = true; value = x; };
+  None = { some = false; };
 
   # iterate = f: x: [x] ++ (iterate f (f x));
   iterate = f: n: x: if n == 0 then [] else [x] ++ (iterate f (n - 1) (f x));

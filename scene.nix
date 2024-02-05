@@ -30,6 +30,7 @@ rec {
       # test = UnitSquare;
       # test = addPoints (Point 1 2 3) (Point 4 5 6);
       test = cross (Point 0.7 0 0) (Point 1 1 0);
+      test2 = dot (Point 1 1 2) (Point 2 2 2);
       # visibleFromCamera
     }
     {
