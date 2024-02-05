@@ -1,4 +1,4 @@
-rec {
+with builtins; rec {
   lib = import <nixpkgs/lib>;
 
   # setAt = i: x: xs: 
@@ -23,7 +23,7 @@ rec {
     map (addPoints d) (iterate rot90 4 d);
   # Square = pos: size: (translate pos) (scale size) UnitSquare;
 
-  Triangle = xs: builtins.listToAttrs (map ({fst, snd}: {name = fst; value = snd;})
+  Triangle = xs: listToAttrs (map ({fst, snd}: {name = fst; value = snd;})
     (lib.zipLists ["a" "b" "c"] xs));
 
   # Cube :: Point3D -> Number -> Geometry
@@ -41,19 +41,19 @@ rec {
   Sphere = pos: radius: { pos = pos; radius = radius; };
 
   # isPoint =
-  pointToList = builtins.attrValues;
-  listToPoint = xs: builtins.listToAttrs (map ({fst, snd}: {name = fst; value = snd;})
+  pointToList = attrValues;
+  listToPoint = xs: listToAttrs (map ({fst, snd}: {name = fst; value = snd;})
     (lib.zipLists ["x" "y" "z"] xs));
 
   # makeArrayOp = f: a: b: f [a b];
   # pointBinOp :: (Number -> Number -> Number) -> (Point3D -> Point3D -> Point3D)
   # generates an binary operation on points from the corresponding operation on numbers
   pointBinOp = f: a: b: lib.zipAttrsWith
-    (_: x: f (builtins.elemAt x 0) (builtins.elemAt x 1)) [a b];
-  addPoints = pointBinOp builtins.add;
-  subPoints = pointBinOp builtins.sub;
-  mulPoints = pointBinOp builtins.mul;
-  scalePoint = s: p: builtins.mapAttrs (_: builtins.mul s) p;
+    (_: x: f (elemAt x 0) (elemAt x 1)) [a b];
+  addPoints = pointBinOp add;
+  subPoints = pointBinOp sub;
+  mulPoints = pointBinOp mul;
+  scalePoint = s: p: mapAttrs (_: mul s) p;
 
   # mapPoints :: (Point3D -> Point3D) -> Geometry -> Geometry
   mapPoints = f: object: object // {
@@ -78,13 +78,13 @@ rec {
   # TODO: add "methods" to individual objects
 
   cross = a: b: Point (a.y*b.z - a.z*b.y) (a.z*b.x - a.x*b.z) (a.x*b.y - a.y*b.x);
-  dot = a: b: builtins.foldl' builtins.add 0
-    (lib.zipListsWith builtins.mul (pointToList a) (pointToList b));
-  # coplanar = points: if builtins.length points <= 3 then true else;
+  dot = a: b: foldl' add 0
+    (lib.zipListsWith mul (pointToList a) (pointToList b));
+  # coplanar = points: if length points <= 3 then true else;
 
   # triangulateShape :: Shape -> [Shape]
-  triangulateShape = s: if builtins.length s <= 3 then [s] else
-    builtins.genList (i: [(let h = builtins.head s; in builtins.seq h h)] ++ (lib.sublist (i+1) 2 s)) (builtins.length s - 2);
+  triangulateShape = s: if length s <= 3 then [s] else
+    genList (i: [(let h = head s; in seq h h)] ++ (lib.sublist (i+1) 2 s)) (length s - 2);
   # triangulate :: Geometry -> Geometry
-  triangulate = mesh: mesh // { faces = builtins.concatMap triangulateShape mesh.faces; };
+  triangulate = mesh: mesh // { faces = concatMap triangulateShape mesh.faces; };
 }
