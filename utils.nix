@@ -51,4 +51,13 @@ rec {
   mulPoints = pointBinOp builtins.mul;
   scalePoint = s: p: builtins.mapAttrs (_: builtins.mul s) p;
 
+  # mapPoints :: (Point3D -> Point3D) -> Geometry -> Geometry
+  mapPoints = f: object: {
+    faces = map (map f) object.faces;
+  };
+  # translate = delta: object: { };
+  translate = delta: mapPoints (addPoints delta);
+  scale = s: mapPoints (scalePoint s);
+  # rotate = theta: mapPoints (rotatePoint theta);
+  # extrude =
 }
