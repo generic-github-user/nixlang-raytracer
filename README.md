@@ -1,6 +1,6 @@
 # nixlang-raytracer
 
-A simple raytracer written in the [Nix configuration language](https://nixos.org/manual/nix/stable/language/index.html) using the standard library (`builtins` and `lib`). It renders to the terminal in ASCII or Unicode, but I plan to adapt it to generate actual images[^1]. Optional resampling to a lower resolution can be enabled to render edges more precisely using non-block Unicode characters. Currently, the renderer can handle scenes containing spheres, convex meshes (which are triangulated at render time), and point light sources. Möller–Trumbore is used for ray-triangle intersection when rendering meshes. Color output is not currently supported.
+A simple raytracer written in the [Nix configuration language](https://nixos.org/manual/nix/stable/language/index.html) using the standard library (`builtins` and `lib`). It renders to the terminal in ASCII or Unicode, but I plan to adapt it to generate actual images[^1]. Optional resampling to a lower resolution can be enabled to render edges more precisely using non-block Unicode characters. Currently, the renderer can handle scenes containing spheres, meshes with convex faces (though the mesh itself need not be convex) (these are triangulated at render time), and point light sources. Möller–Trumbore is used for ray-triangle intersection when rendering meshes. Color output is not currently supported.
 
 ## Usage
 

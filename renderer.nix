@@ -26,4 +26,5 @@ let
           else None;
   test1 = with utils; intersects { origin' = origin; dir = Point 1 1 1; }
     [(Point 5 0 0) (Point 0 5 0) (Point 0 0 5)];
-  in test1
+  test2 = with utils; triangulate UnitCube;
+  in test2

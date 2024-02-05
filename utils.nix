@@ -37,6 +37,7 @@ rec {
 
     # volume = 
   };
+  UnitCube = Cube origin 1.0;
   Sphere = pos: radius: { pos = pos; radius = radius; };
 
   # isPoint =
@@ -55,7 +56,7 @@ rec {
   scalePoint = s: p: builtins.mapAttrs (_: builtins.mul s) p;
 
   # mapPoints :: (Point3D -> Point3D) -> Geometry -> Geometry
-  mapPoints = f: object: {
+  mapPoints = f: object: object // {
     faces = map (map f) object.faces;
   };
   # translate = delta: object: { };
@@ -80,5 +81,10 @@ rec {
   dot = a: b: builtins.foldl' builtins.add 0
     (lib.zipListsWith builtins.mul (pointToList a) (pointToList b));
   # coplanar = points: if builtins.length points <= 3 then true else;
-  # triangulate = mesh:
+
+  # triangulateShape :: Shape -> [Shape]
+  triangulateShape = s: if builtins.length s <= 3 then [s] else
+    builtins.genList (i: [(let h = builtins.head s; in builtins.seq h h)] ++ (lib.sublist (i+1) 2 s)) (builtins.length s - 2);
+  # triangulate :: Geometry -> Geometry
+  triangulate = mesh: mesh // { faces = builtins.concatMap triangulateShape mesh.faces; };
 }
