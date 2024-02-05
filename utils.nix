@@ -60,4 +60,19 @@ rec {
   scale = s: mapPoints (scalePoint s);
   # rotate = theta: mapPoints (rotatePoint theta);
   # extrude =
+
+  Ok = x: { ok = true; value = x; };
+  Error = err: { ok = false; error = err; };
+
+  # iterate = f: x: [x] ++ (iterate f (f x));
+  iterate = f: n: x: if n == 0 then [] else [x] ++ (iterate f (n - 1) (f x));
+
+  compose = f: g: x: f (g x);
+  # TODO: add "methods" to individual objects
+
+  cross = a: b: Point (a.y*b.z - a.z*b.y) (a.z*b.x - a.x*b.z) (a.x*b.y - a.y*b.x);
+  dot = a: b: builtins.foldl' builtins.add 0
+    (lib.zipListsWith builtins.mul (pointToList a) (pointToList b));
+  # coplanar = points: if builtins.length points <= 3 then true else;
+  # triangulate = mesh:
 }
