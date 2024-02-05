@@ -40,4 +40,15 @@ rec {
   pointToList = builtins.attrValues;
   listToPoint = xs: builtins.listToAttrs (map ({fst, snd}: {name = fst; value = snd;})
     (lib.zipLists ["x" "y" "z"] xs));
+
+  # makeArrayOp = f: a: b: f [a b];
+  # pointBinOp :: (Number -> Number -> Number) -> (Point3D -> Point3D -> Point3D)
+  # generates an binary operation on points from the corresponding operation on numbers
+  pointBinOp = f: a: b: lib.zipAttrsWith
+    (_: x: f (builtins.elemAt x 0) (builtins.elemAt x 1)) [a b];
+  addPoints = pointBinOp builtins.add;
+  subPoints = pointBinOp builtins.sub;
+  mulPoints = pointBinOp builtins.mul;
+  scalePoint = s: p: builtins.mapAttrs (_: builtins.mul s) p;
+
 }
