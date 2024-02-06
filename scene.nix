@@ -25,7 +25,7 @@ rec {
       material.reflectiveness = 0.8;
       material.diffusion = 0.5;
       material.opacity = 1.0;
-      type = "object";
+      type = "mesh";
 
       # test = UnitSquare;
       # test = addPoints (Point 1 2 3) (Point 4 5 6);

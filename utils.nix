@@ -12,6 +12,7 @@ with builtins; rec {
   # PointType = Type { x = Number; y = Number; z = Number; }
   Point = a: b: c: { x = a; y = b; z = c; };
   Ray = o: d: { origin' = o; dir = d; };
+  rayFrom = a: b: { origin' = a; dir = subPoints b a; };
   origin = Point 0 0 0;
 
   # liftPoint :: Int -> Number -> Point2D -> Point3D
@@ -71,6 +72,11 @@ with builtins; rec {
 
   Some = x: { some = true; value = x; };
   None = { some = false; };
+  Maybe = {
+    zipWith = f: a: b: if a.some && b.some then Some (f a.value b.value) else Maybe.or_ a b;
+    or_ = a: b: if a.some then a else b;
+    unwrap = a: a.value;
+  };
 
   # iterate = f: x: [x] ++ (iterate f (f x));
   iterate = f: n: x: if n == 0 then [] else [x] ++ (iterate f (n - 1) (f x));
@@ -88,4 +94,8 @@ with builtins; rec {
     genList (i: [(let h = head s; in seq h h)] ++ (lib.sublist (i+1) 2 s)) (length s - 2);
   # triangulate :: Geometry -> Geometry
   triangulate = mesh: mesh // { faces = concatMap triangulateShape mesh.faces; };
+
+  foldl1 = op: list: foldl' op (head list) (tail list);
+  minBy = f: foldl1 (x: y: if f(y) >= f(x) then y else x);
+  sum = foldl' add 0;
 }
