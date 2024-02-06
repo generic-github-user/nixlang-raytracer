@@ -11,6 +11,7 @@ with builtins; rec {
 
   # PointType = Type { x = Number; y = Number; z = Number; }
   Point = a: b: c: { x = a; y = b; z = c; };
+  Ray = o: d: { origin' = o; dir = d; };
   origin = Point 0 0 0;
 
   # liftPoint :: Int -> Number -> Point2D -> Point3D

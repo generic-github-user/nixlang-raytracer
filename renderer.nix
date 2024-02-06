@@ -1,7 +1,8 @@
-scene:
+scene':
 let
   lib = import <nixpkgs/lib>;
   utils = import ./utils.nix;
+  scene = import scene';
   # adapted from https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm#C++_implementation
   intersects = with utils; ray@{ origin', dir }: triangle:
     let tri = Triangle triangle;
@@ -27,4 +28,9 @@ let
   test1 = with utils; intersects { origin' = origin; dir = Point 1 1 1; }
     [(Point 5 0 0) (Point 0 5 0) (Point 0 0 5)];
   test2 = with utils; triangulate UnitCube;
-  in test2
+in with builtins // utils; genList (y: genList (x:
+let c = scene.camera; p = Point
+  (c.position.x - c.width / 2 + (x + 0.5) * (c.width / c.resolution.x))
+  c.focalLength
+  (c.position.z - c.height / 2 + (y + 0.5) * (c.height / c.resolution.y));
+  in Ray p (subPoints p scene.camera.position)) scene.camera.resolution.x) scene.camera.resolution.y
