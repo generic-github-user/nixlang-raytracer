@@ -3,20 +3,34 @@ rec {
   background = 0.01;
   camera = with utils; rec {
     position = Point 1.5 0 0.5;
+    # distance between camera and viewplane
     focalLength = 0.2;
+    # dimensions of the viewplane (rays are cast from camera.position through
+    # this plane and into the scene; it corresponds to the rendered image)
     width = 0.5;
     height = width * 0.5;
+    # number of pixels to render along each axis; rays are cast from the center
+    # of each pixel/cell in the viewplane
     resolution = {
       x = 120;
-      y = builtins.floor (resolution.x * 0.25);
+      y = builtins.floor (resolution.x * 0.25); # scale to match typical terminal character dimensions
     };
+    # if Unicode shape-matching is used for rendering, we can downsample from a
+    # higher resolution to produce higher-resolution edges; otherwise, the
+    # pixels are just averaged (can be used for antialiasing)
     resample = {
       x = 2;
       y = 2;
     };
+    # number of rays to cast per pixel (only improves image quality if
+    # stochastic rendering/lighting modes are used)
     samples = 1;
 
+    # if `true`, the color palette will be automatically scaled/translated to
+    # match the range of brightness values in the image
     remapColors = true;
+    # raw pixel value/color range to be mapped onto the character set; only
+    # used if remapColors is disabled
     colorRange.low = 0.0;
     colorRange.high = 0.1;
     # charset = lib.stringToCharacters "░▒▓█";
