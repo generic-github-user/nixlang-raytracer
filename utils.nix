@@ -75,9 +75,12 @@ with builtins; rec {
   Some = x: { some = true; value = x; };
   None = { some = false; };
   Maybe = {
+    # TODO: self-explanatory
     zipWith = f: a: b: if a.some && b.some then Some (f a.value b.value) else Maybe.or_ a b;
+    zipWith' = f: a: b: if a.some && b.some then Some (f a.value b.value) else None;
     or_ = a: b: if a.some then a else b;
     unwrap = a: a.value;
+    map_ = f: a: if a.some then Some (f a.value) else a;
   };
 
   # iterate = f: x: [x] ++ (iterate f (f x));
@@ -101,7 +104,8 @@ with builtins; rec {
   triangulate = mesh: mesh // { faces = concatMap triangulateShape mesh.faces; };
 
   foldl1 = op: list: foldl' op (head list) (tail list);
-  minBy = f: foldl1 (x: y: if f(y) >= f(x) then y else x);
+  minBy = f: foldl1 (minBy' f);
+  minBy' = f: x: y: if f(y) >= f(x) then y else x;
   sum = foldl' add 0;
 
   # TODO: find a better name for this...
@@ -154,5 +158,10 @@ with builtins; rec {
   rotateAbout = angle: p': mapPoints (rotatePointAbout angle p');
   # rotate = angle: g: rotateAbout angle g.center;
 
+  abs = x: if x < 0 then -x else x;
+  norm = v: sqrt (dot v v);
+  normed = v: scalePoint (1.0 / (norm v)) v;
+
   # TODO: memoization monad?
+  show = x: trace (deepSeq x x) x;
 }

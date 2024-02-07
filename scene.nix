@@ -1,6 +1,6 @@
 rec {
   utils = import ./utils.nix;
-  background = 0.05;
+  background = 0.01;
   camera = with utils; rec {
     position = Point 1.5 0 0.5;
     focalLength = 0.2;
@@ -16,9 +16,9 @@ rec {
     };
     samples = 1;
 
-    remapColors = false;
+    remapColors = true;
     colorRange.low = 0.0;
-    colorRange.high = 0.2;
+    colorRange.high = 0.1;
     # charset = lib.stringToCharacters "░▒▓█";
     charset = [" " "░" "▒" "▓" "█"];
     # charset = lib.stringToCharacters "0123456789";
@@ -43,11 +43,11 @@ rec {
       # visibleFromCamera
     }
     {
-      position = Point 0 0 2;
-      # position = Point 0 0 0;
+      # position = Point 5 (-3) 0;
+      position = Point 1 0 (-3);
       radius = 0.1;
       # TODO: automatically promote values to floats where needed
-      brightness = 10.0;
+      brightness = 3.0;
       type = "light";
     }
   ];
