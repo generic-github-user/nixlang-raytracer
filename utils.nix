@@ -98,4 +98,12 @@ with builtins; rec {
   foldl1 = op: list: foldl' op (head list) (tail list);
   minBy = f: foldl1 (x: y: if f(y) >= f(x) then y else x);
   sum = foldl' add 0;
+
+  # TODO: find a better name for this...
+  foldl1-2D = op: compose (foldl1 op) (map (foldl1 op));
+  min2D = foldl1-2D lib.min;
+  max2D = foldl1-2D lib.max;
+
+  mapRange = a1: a2: b1: b2: x: (x - a1) * (b2 - b1) / (a2 - a1) + b1;
+  map2D = f: map (map f);
 }

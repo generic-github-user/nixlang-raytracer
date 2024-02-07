@@ -3,6 +3,8 @@ let
   lib = import <nixpkgs/lib>;
   utils = import ./utils.nix;
   scene = import scene';
+  # charset = lib.stringToCharacters "░▒▓█";
+  charset = ["░" "▒" "▓" "█"];
   # adapted from https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm#C++_implementation
   # intersects :: Ray -> Triangle -> Maybe Number
   intersects = with utils; ray@{ origin', dir }: triangle:
@@ -36,7 +38,7 @@ let
   firstIntersectionWith = with utils; ray: obj: foldl1 (Maybe.zipWith lib.min)
   (map (intersects ray) obj.geometry.faces);
   # TODO: clean this up
-  intersections = ray: (builtins.filter (x: x.t.some) (map (o: { obj = o; t = firstIntersectionWith ray o; }) (builtins.filter (o: o.type == "mesh") scene.objects)));
+  intersections = with utils; ray: (builtins.filter (x: x.t.some) (map (o: (let o' = o // { geometry = triangulate o.geometry; }; in { obj = o'; t = firstIntersectionWith ray o'; })) (builtins.filter (o: o.type == "mesh") scene.objects)));
   firstIntersection = with utils; ray: let intersections' = intersections ray;
   in if intersections' == [] then None
   # TODO: come up with a better way to lift information about operations on
@@ -48,7 +50,16 @@ let
   trace = with utils; ray: depth: let I = firstIntersection ray; in if !I.some then scene.background else
   let p = addPoints ray.origin' (scalePoint I.value.t.value ray.dir); in
   I.value.obj.material.reflectiveness * (sum (map (l: let lray = rayFrom p l.position;
-  in if (firstIntersection lray).some then l.brightness * (dot lray.dir ray.dir) else 0) lights));
+  in if (firstIntersection lray).some then 0 else l.brightness * (dot lray.dir ray.dir)) lights));
+
+  frame = with builtins // utils; let c = scene.camera; in (genList (y: genList (x:
+  let p = Point
+    (c.position.x - c.width / 2 + (x + 0.5) * (c.width / c.resolution.x))
+    c.focalLength
+    (c.position.z - c.height / 2 + (y + 0.5) * (c.height / c.resolution.y));
+    in trace (Ray p (subPoints p scene.camera.position)) 5)
+    scene.camera.resolution.x) scene.camera.resolution.y);
+  getChar = with builtins // utils; min': max': v: elemAt charset (floor (mapRange min' max' 0 3 v));
 
   test1 = with utils; intersects { origin' = origin; dir = Point 1 1 1; }
     [(Point 5 0 0) (Point 0 5 0) (Point 0 0 5)];
@@ -56,9 +67,6 @@ let
   test3 = with utils; foldl1 builtins.add [1 2 3];
   test4 = with utils; intersections { origin' = origin; dir = Point 1 1 1.1; };
 # in test4
-in with builtins // utils; genList (y: genList (x:
-let c = scene.camera; p = Point
-  (c.position.x - c.width / 2 + (x + 0.5) * (c.width / c.resolution.x))
-  c.focalLength
-  (c.position.z - c.height / 2 + (y + 0.5) * (c.height / c.resolution.y));
-  in trace (Ray p (subPoints p scene.camera.position)) 5) scene.camera.resolution.x) scene.camera.resolution.y
+in with builtins // utils; let c = scene.camera; in
+  lib.concatStringsSep "\n" (map lib.concatStrings
+  (map2D (if c.remapColors then (getChar (min2D frame) (max2D frame)) else (getChar 0.0 1.0)) frame))
