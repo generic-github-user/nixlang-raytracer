@@ -4,7 +4,8 @@ let
   utils = import ./utils.nix;
   scene = import scene';
   # charset = lib.stringToCharacters "░▒▓█";
-  charset = ["░" "▒" "▓" "█"];
+  charset = [" " "░" "▒" "▓" "█"];
+  # charset = lib.stringToCharacters "0123456789";
   # adapted from https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm#C++_implementation
   # intersects :: Ray -> Triangle -> Maybe Number
   intersects = with utils; ray@{ origin', dir }: triangle:
@@ -12,8 +13,7 @@ let
         e1 = subPoints tri.b tri.a;
         e2 = subPoints tri.c tri.a;
         ray_x_e2 = cross dir e2;
-        det = dot e1 ray_x_e2;
-        epsilon = 0.00000001; in
+        det = dot e1 ray_x_e2; in
         if det > -epsilon && det < epsilon then None else
 
         let det' = 1.0 / det;
@@ -52,14 +52,14 @@ let
   I.value.obj.material.reflectiveness * (sum (map (l: let lray = rayFrom p l.position;
   in if (firstIntersection lray).some then 0 else l.brightness * (dot lray.dir ray.dir)) lights));
 
-  frame = with builtins // utils; let c = scene.camera; in (genList (y: genList (x:
+  frame = with builtins // utils; let c = scene.camera; in lib.reverseList (genList (y: genList (x:
   let p = Point
     (c.position.x - c.width / 2 + (x + 0.5) * (c.width / c.resolution.x))
     c.focalLength
     (c.position.z - c.height / 2 + (y + 0.5) * (c.height / c.resolution.y));
     in trace (Ray p (subPoints p scene.camera.position)) 5)
     scene.camera.resolution.x) scene.camera.resolution.y);
-  getChar = with builtins // utils; min': max': v: elemAt charset (floor (mapRange min' max' 0 3 v));
+  getChar = with builtins // utils; min': max': v: let l = length charset - 1; in elemAt charset (floor (clip 0 l (mapRange min' max' 0 l v)));
 
   test1 = with utils; intersects { origin' = origin; dir = Point 1 1 1; }
     [(Point 5 0 0) (Point 0 5 0) (Point 0 0 5)];
@@ -69,4 +69,4 @@ let
 # in test4
 in with builtins // utils; let c = scene.camera; in
   lib.concatStringsSep "\n" (map lib.concatStrings
-  (map2D (if c.remapColors then (getChar (min2D frame) (max2D frame)) else (getChar 0.0 1.0)) frame))
+  (map2D (if c.remapColors then (getChar (min2D frame) (max2D frame)) else (getChar 0.15 0.20)) frame))
