@@ -80,6 +80,7 @@ with builtins; rec {
 
   # iterate = f: x: [x] ++ (iterate f (f x));
   iterate = f: n: x: if n == 0 then [] else [x] ++ (iterate f (n - 1) (f x));
+  iterate' = f: n: x: i: if n == 0 then [] else [x] ++ (iterate' f (n - 1) (f x i) (i + 1));
 
   compose = f: g: x: f (g x);
   # TODO: add "methods" to individual objects
@@ -108,4 +109,18 @@ with builtins; rec {
   map2D = f: map (map f);
   epsilon = 0.00000001;
   clip = low: high: x: lib.max low (lib.min high x);
+
+  pi = 3.14159265358979323846264338;
+  fmod = x: m: x - (floor (x / m)) * m;
+  # slow, inaccurate, etc. -- works for now
+  sin_ = x: n: sum (iterate' (y: i: y * -1 / (2 * i * (2 * i + 1)) * x * x) n x 1);
+  sin = x: if x < 0 then sin (-x)
+  else if x <= (pi / 2) then sin_ x 5
+  else if x < pi then sin (pi - x)
+  else if x < 2 * pi then -sin (x - pi)
+  else sin (fmod x (2 * pi));
+  # cos = x: sin (pi / 2 - x);
+  cos = x: sin (x + pi / 2);
+  tan = x: sin x / cos x;
+  # rotateX = t: 
 }
