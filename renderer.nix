@@ -1,5 +1,10 @@
 scene':
-with builtins // (import ./utils.nix); let
+with builtins // ((import ./utils.nix) {
+  settings = {
+    math.sqrt_iterations = 10;
+    math.taylor_series_iterations = 5;
+  };
+}); let
   lib = import <nixpkgs/lib>;
   scene = import scene';
   # adapted from https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm#C++_implementation
@@ -48,13 +53,26 @@ with builtins // (import ./utils.nix); let
   else Some (minBy (x: x.value.t) intersections').value;
   lights = filter (x: x.type == "light") scene.objects;
   normal = face: let T = Triangle face; e1 = subPoints T.b T.a; e2 = subPoints T.c T.a;
-    in cross e1 e2;
+    in normed (cross e1 e2);
 
   # trace :: Ray -> Int -> Number
-  trace = ray: depth: let I = firstIntersection ray; in if !I.some then scene.background else
-  let p = addPoints ray.origin' (scalePoint I.value.t ray.dir); in
-  I.value.obj.material.reflectiveness * (sum (map (l: let lray = rayFrom p l.position;
-  in if (firstIntersection lray).some then 0.0 else l.brightness * (dot lray.dir (normal I.value.face))) lights));
+  trace = ray: depth: let I = firstIntersection ray; shading = scene.camera.shading; in
+  if !I.some then scene.background else
+  let p = addPoints ray.origin' (scalePoint I.value.t ray.dir);
+    material = I.value.obj.material;
+    snormal = normal I.value.face; in
+  if shading == "default" then sum (map (l: let lray = rayFrom p l.position;
+    in if (firstIntersection lray).some then 0.0 else
+    material.reflectiveness * l.brightness * (dot lray.dir snormal)) lights)
+  else if shading == "phong" then let ph = material.phong; in
+    ph.ambient * scene.ambientLight + (sum (map (l: let
+    lray = normed (subPoints l.position p);
+    reflection = vectorReflection lray snormal; in # is this normalized?
+    ph.diffuse * (dot lray snormal) * l.phong.diffuse + ph.specular * (power
+    (dot reflection (normed (subPoints scene.camera.position p))) ph.shininess)
+    * l.phong.specular) lights))
+  # else if shading == "none" then 1.0
+  else throw "invalid shading mode";
 
   camera = scene.camera;
   frame = let c = camera; in lib.reverseList (genMatrix (x: y:
@@ -68,11 +86,11 @@ with builtins // (import ./utils.nix); let
   getChar = min': max': v: let l = length camera.charset - 1.0; in
     elemAt camera.charset (floor (clip 0.0 l (mapRange min' max' 0.0 l v)));
 
-  test1 = intersects { origin' = origin; dir = Point 1 1 1; }
-    [(Point 5 0 0) (Point 0 5 0) (Point 0 0 5)];
-  test2 = triangulate UnitCube;
-  test3 = foldl1 add [1 2 3];
-  test4 = intersections { origin' = origin; dir = Point 1 1 1.1; };
+  # test1 = intersects { origin' = origin; dir = Point 1 1 1; }
+    # [(Point 5 0 0) (Point 0 5 0) (Point 0 0 5)];
+  # test2 = triangulate UnitCube;
+  # test3 = foldl1 add [1 2 3];
+  # test4 = intersections { origin' = origin; dir = Point 1 1 1.1; };
 in let c = camera; in
   # builtins.trace (let x = frame; in deepSeq x x)
   (lib.concatStringsSep "\n" (map lib.concatStrings

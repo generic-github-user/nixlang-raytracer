@@ -1,4 +1,4 @@
-with builtins; rec {
+{ settings }: with builtins; rec {
   lib = import <nixpkgs/lib>;
 
   # setAt = i: x: xs: 
@@ -86,6 +86,7 @@ with builtins; rec {
   # iterate = f: x: [x] ++ (iterate f (f x));
   iterate = f: n: x: if n == 0 then [] else [x] ++ (iterate f (n - 1) (f x));
   iterate' = f: n: x: i: if n == 0 then [] else [x] ++ (iterate' f (n - 1) (f x i) (i + 1));
+  iterated = f: n: x: if n == 0 then x else iterated (f x) (n - 1) x;
 
   compose = f: g: x: f (g x);
   composeN = foldl' compose lib.id;
@@ -123,7 +124,7 @@ with builtins; rec {
   # slow, inaccurate, etc. -- works for now
   sin_ = x: n: sum (iterate' (y: i: y * -1 / (2 * i * (2 * i + 1)) * x * x) n x 1);
   sin = x: if x < 0 then sin (-x)
-  else if x <= (pi / 2) then sin_ x 5
+  else if x <= (pi / 2) then sin_ x settings.math.taylor_series_iterations
   else if x < pi then sin (pi - x)
   else if x < 2 * pi then -sin (x - pi)
   else sin (fmod x (2 * pi));
@@ -161,6 +162,11 @@ with builtins; rec {
   abs = x: if x < 0 then -x else x;
   norm = v: sqrt (dot v v);
   normed = v: scalePoint (1.0 / (norm v)) v;
+  vectorReflection = v: n: subPoints (scalePoint (2 * (dot v n)) n) v;
+
+  sqrt_ = n: i: x: if n == 0 then i else sqrt_ (n - 1) (i - ((i * i - x) / (2 * i))) x;
+  sqrt = sqrt_ settings.math.sqrt_iterations 1.0;
+  power = x: n: iterated (y: y * x) n 1;
 
   # TODO: memoization monad?
   show = x: trace (deepSeq x x) x;

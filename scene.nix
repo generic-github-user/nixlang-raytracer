@@ -1,6 +1,7 @@
 rec {
   utils = import ./utils.nix;
   background = 0.01;
+  ambientLight = 0.1;
   camera = with utils; rec {
     position = Point 1.5 0 0.5;
     # distance between camera and viewplane
@@ -36,18 +37,26 @@ rec {
     # charset = lib.stringToCharacters "░▒▓█";
     charset = [" " "░" "▒" "▓" "█"];
     # charset = lib.stringToCharacters "0123456789";
+
+    shading = "phong";
   };
   objects = with utils; [
     {
       # geometry.faces = map (i: ) [0 1 2];
       # TODO: why does string concatenation fail with index error when this cube is moved...?
       # TODO: clean up interface for rotating objects (and other method-like functions)
-      geometry = let c = Cube (Point 1.0 2.0 0) 1.5; in rotateAbout [0 (pi / 4) (pi / 4)] (meanPoint c) c;
+      geometry = let c = Cube (Point 1.0 2.0 0) 1.5; in rotateAbout [0 (pi / 5) (pi / 5)] (meanPoint c) c;
       # geometry = Cube (Point 0 0 0) 1;
 
       material.reflectiveness = 0.5;
       material.diffusion = 0.5;
       material.opacity = 1.0;
+      material.phong = {
+        specular = 0.5;
+        diffuse = 0.5;
+        ambient = 0.2;
+        shininess = 10;
+      };
       type = "mesh";
 
       # test = UnitSquare;
@@ -58,11 +67,14 @@ rec {
     }
     {
       # position = Point 5 (-3) 0;
-      position = Point 1 0 (-3);
+      position = Point 0 0 0;
       radius = 0.1;
       # TODO: automatically promote values to floats where needed
       brightness = 3.0;
       type = "light";
+
+      phong.specular = 0.2;
+      phong.diffuse = 0.4;
     }
   ];
 }
