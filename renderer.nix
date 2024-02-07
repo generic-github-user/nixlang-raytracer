@@ -49,15 +49,15 @@ with builtins // (import ./utils.nix); let
   in if (firstIntersection lray).some then 0 else l.brightness * (dot lray.dir ray.dir)) lights));
 
   camera = scene.camera;
-  frame = let c = camera; in lib.reverseList (genList (y: genList (x:
+  frame = let c = camera; in lib.reverseList (genMatrix (x: y:
   let p = Point
     (c.position.x - c.width / 2 + (x + 0.5) * (c.width / c.resolution.x))
     c.focalLength
     (c.position.z - c.height / 2 + (y + 0.5) * (c.height / c.resolution.y));
-    in trace (Ray p (subPoints p c.position)) 5)
-    c.resolution.x) c.resolution.y);
-  getChar = min': max': v: let l = length camera.charset - 1; in
-    elemAt camera.charset (floor (clip 0 l (mapRange min' max' 0 l v)));
+    in trace (Ray p (subPoints p c.position)) 5) c.resolution.x c.resolution.y);
+    
+  getChar = min': max': v: let l = length camera.charset - 1.0; in
+    elemAt camera.charset (floor (clip 0.0 l (mapRange min' max' 0.0 l v)));
 
   test1 = intersects { origin' = origin; dir = Point 1 1 1; }
     [(Point 5 0 0) (Point 0 5 0) (Point 0 0 5)];

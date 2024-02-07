@@ -66,6 +66,8 @@ with builtins; rec {
   scale = s: mapPoints (scalePoint s);
   # rotate = theta: mapPoints (rotatePoint theta);
   # extrude =
+  meanPoint = g: let p = points g; in scalePoint (1.0 / (length p)) (foldl1 addPoints p);
+  points = g: lib.unique (lib.concatLists g.faces);
 
   Ok = x: { ok = true; value = x; };
   Error = err: { ok = false; error = err; };
@@ -83,11 +85,13 @@ with builtins; rec {
   iterate' = f: n: x: i: if n == 0 then [] else [x] ++ (iterate' f (n - 1) (f x i) (i + 1));
 
   compose = f: g: x: f (g x);
+  composeN = foldl' compose lib.id;
   # TODO: add "methods" to individual objects
 
   cross = a: b: Point (a.y*b.z - a.z*b.y) (a.z*b.x - a.x*b.z) (a.x*b.y - a.y*b.x);
   dot = a: b: foldl' add 0
     (lib.zipListsWith mul (pointToList a) (pointToList b));
+  dot' = a: b: sum (lib.zipListsWith mul a b);
   # coplanar = points: if length points <= 3 then true else;
 
   # triangulateShape :: Shape -> [Shape]
@@ -122,5 +126,33 @@ with builtins; rec {
   # cos = x: sin (pi / 2 - x);
   cos = x: sin (x + pi / 2);
   tan = x: sin x / cos x;
-  # rotateX = t: 
+  
+  rotationX = t: [[1 0 0] [0 (cos t) (-sin t)] [0 (sin t) (cos t)]];
+  rotationY = t: [[(cos t) 0 (sin t)] [0 1 0] [(-sin t) 0 (cos t)]];
+  rotationZ = t: [[(cos t) (-sin t) 0] [(sin t) (cos t) 0] [0 0 1]];
+
+  row = lib.flip elemAt;
+  column = i: m: genList (j: elemAt (elemAt m j) i) (length m);
+
+  genMatrix = f: nx: ny: genList (y: genList (x: f x y) nx) ny;
+  # genMatrix_test = genMatrix add 5 5;
+  matmul = A: B: genMatrix (x: y: dot' (row y A) (column x B)) (length (head B)) (length A);
+  matmulN = foldl1 matmul;
+  matmul_test = matmul [[1 2 3] [4 5 6]] [[7 8] [9 10] [11 12]];
+
+  transpose = m: genList (i: column i m) (length (head m));
+  transpose_test = transpose [[1 3 5 7]];
+  matrixToPoint = composeN [listToPoint head transpose];
+
+  # generate rotation matrix for each axis, get their product (left-to-right),
+  # multiply by point (as column vector)
+  rotatePoint = angle: p: matmulN ((lib.zipListsWith (x: y: x y) [rotationX rotationY rotationZ] angle)
+    ++ [(transpose [(pointToList p)])]);
+  rotatePoint_test = rotatePoint [0 0 (pi / 2)] (Point 1 0 0);
+  rotatePointAbout = angle: p': composeN [(addPoints p') matrixToPoint
+    (rotatePoint angle) ((lib.flip subPoints) p')];
+  rotateAbout = angle: p': mapPoints (rotatePointAbout angle p');
+  # rotate = angle: g: rotateAbout angle g.center;
+
+  # TODO: memoization monad?
 }
