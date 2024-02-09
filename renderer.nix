@@ -40,7 +40,7 @@ with builtins // (import ./utils.nix) ; let
   # TODO: clean this up
   # intersections :: Ray -> [Intersection]
   intersections = ray: let meshes = filter (o: o.type == "mesh") scene.objects; in
-  (filter (x: x.some) (map (o: (let o' = o // { geometry = triangulate o.geometry; };
+  (filter (x: x.some) (map (o: (let o' = o // { geometry = o.geometry.triangulation; };
   in Maybe.zipWith' lib.mergeAttrs (Some { obj = o'; }) (firstIntersectionWith ray o'))) meshes));
   # TODO: come up with a better way to lift information about operations on
   # `Maybe`s in attrsets to operations on the objects themselves (also clean up
@@ -49,12 +49,6 @@ with builtins // (import ./utils.nix) ; let
   in if intersections' == [] then None
   else Some (minBy (x: x.value.t) intersections').value;
   lights = filter (x: x.type == "light") scene.objects;
-  normal = face: let T = Triangle face; e1 = subPoints T.b T.a; e2 = subPoints T.c T.a;
-    in normed (cross e1 e2);
-  # computes the normal vector out of a mesh at the given face, using a known
-  # point inside the volume bounded by the mesh
-  normalOut = inner: face: let n = normal face; in if (dot n (subPoints inner (head face))) > 0
-    then scalePoint (-1) n else n;
 
   # trace :: Ray -> Int -> Number
   trace = ray: depth: let I = (firstIntersection ray); shading = scene.camera.shading; in
@@ -62,17 +56,18 @@ with builtins // (import ./utils.nix) ; let
   let p = addPoints ray.origin' (scalePoint I.value.t ray.dir);
     material = I.value.obj.material;
     # snormal = normal I.value.face; in
-    snormal = normalOut (meanPoint I.value.obj.geometry) I.value.face; in
+    snormal = I.value.obj.geometry.normalTo I.value.face; in
+    # snormal = normalOut (meanPoint I.value.obj.geometry) I.value.face; in
   if shading == "default" then sum (map (l: let lray = rayFrom p l.position;
     in if (firstIntersection lray).some then 0.0 else
-    material.reflectiveness * l.brightness * (dot (normed lray.dir) snormal)) lights)
+    material.reflectiveness * l.brightness * (dot (normalized lray.dir) snormal)) lights)
   else if shading == "phong" then let ph = material.phong; in
     ph.ambient * scene.ambientLight + (sum (map (l: let
     lray = rayFrom' p l.position;
     reflection = vectorReflection lray.dir snormal; in # is this normalized?
     if (firstIntersection lray).some then 0.0 else
     ph.diffuse * (dot lray.dir snormal) * l.phong.diffuse + ph.specular * (power
-    (dot reflection (normed (subPoints scene.camera.position p))) ph.shininess)
+    (dot reflection (normalized (subPoints scene.camera.position p))) ph.shininess)
     * l.phong.specular) lights))
   # else if shading == "none" then 1.0
   else throw "invalid shading mode";

@@ -3,6 +3,7 @@ with builtins; rec {
   settings = {
     math.sqrt_iterations = 10;
     math.taylor_series_iterations = 8;
+    memoizeNormals = false;
   };
 
   lib = import <nixpkgs/lib>;
@@ -20,11 +21,22 @@ with builtins; rec {
   Point = a: b: c: { x = a; y = b; z = c; };
   Ray = o: d: { origin' = o; dir = d; };
   rayFrom = a: b: { origin' = a; dir = subPoints b a; };
-  rayFrom' = a: b: { origin' = a; dir = normed (subPoints b a); };
+  rayFrom' = a: b: { origin' = a; dir = normalized (subPoints b a); };
   origin = Point 0 0 0;
+
+  normal = face: let T = Triangle face; e1 = subPoints T.b T.a; e2 = subPoints T.c T.a;
+    in normalized (cross e1 e2);
+  # computes the normal vector out of a mesh at the given face, using a known
+  # point inside the volume bounded by the mesh
+  normalOut = inner: face: let n = normal face; in if (dot n (subPoints inner (head face))) > 0
+    then scalePoint (-1) n else n;
 
   # liftPoint :: Int -> Number -> Point2D -> Point3D
   liftPoint = axis: w: p: listToPoint (insertAt axis w (pointToList p));
+  Geometry = faces: let memoized = memoizeOn (normalOut (meanPoint g)) faces; g = rec { inherit faces; triangulation = triangulate g; center = meanPoint g; normalTo = if settings.memoizeNormals then memoized else normalOut center; }; in g;
+  # Polygon = v:
+
+  memoizeOn = f: values: let h = k: hashString "md5" (toJSON k); dict = listToAttrs (map (v: { name = h v; value = f v; }) values); in (key: getAttr (h key) dict);
 
   # TODO: make this a specific case of a more general shape class
   # UnitSquare :: Shape
@@ -37,16 +49,19 @@ with builtins; rec {
     (lib.zipLists ["a" "b" "c"] xs));
 
   # Cube :: Point3D -> Number -> Geometry
-  Cube = pos: size: compose (translate pos) (scale size) {
+  Cube = pos: size: compose (translate pos) (scale size)
+    (Geometry (map ({i, j}: map (liftPoint i j) UnitSquare)
+    (lib.cartesianProductOfSets {i = [0 1 2]; j = [0 1];})));
+  # {
     # faces = map (mapPoints (liftPoint) (Square pos size)) [0 1 2];
-    position = origin;
-    faces = map ({i, j}: map (liftPoint i j) UnitSquare)
-      (lib.cartesianProductOfSets {i = [0 1 2]; j = [0 1];});
+    # position = origin;
+    # faces = map ({i, j}: map (liftPoint i j) UnitSquare)
+      # (lib.cartesianProductOfSets {i = [0 1 2]; j = [0 1];});
     # faces = [UnitSquare];
     # faces = [[origin]];
 
     # volume = 
-  };
+  # };
   UnitCube = Cube origin 1.0;
   Sphere = pos: radius: { pos = pos; radius = radius; };
 
@@ -66,9 +81,7 @@ with builtins; rec {
   scalePoint = s: p: mapAttrs (_: mul s) p;
 
   # mapPoints :: (Point3D -> Point3D) -> Geometry -> Geometry
-  mapPoints = f: object: object // {
-    faces = map (map f) object.faces;
-  };
+  mapPoints = f: object: Geometry (map (map f) object.faces);
   # translate = delta: object: { };
   translate = delta: mapPoints (addPoints delta);
   scale = s: mapPoints (scalePoint s);
@@ -110,7 +123,7 @@ with builtins; rec {
   triangulateShape = s: if length s <= 3 then [s] else
     genList (i: [(let h = head s; in seq h h)] ++ (lib.sublist (i+1) 2 s)) (length s - 2);
   # triangulate :: Geometry -> Geometry
-  triangulate = mesh: mesh // { faces = concatMap triangulateShape mesh.faces; };
+  triangulate = mesh: Geometry (concatMap triangulateShape mesh.faces);
 
   foldl1 = op: list: foldl' op (head list) (tail list);
   minBy = f: foldl1 (minBy' f);
@@ -166,11 +179,11 @@ with builtins; rec {
   rotatePointAbout = angle: p': composeN [(addPoints p') matrixToPoint
     (rotatePoint angle) ((lib.flip subPoints) p')];
   rotateAbout = angle: p': mapPoints (rotatePointAbout angle p');
-  # rotate = angle: g: rotateAbout angle g.center;
+  rotate = angle: g: (rotateAbout angle g.center) g;
 
   abs = x: if x < 0 then -x else x;
   norm = v: sqrt (dot v v);
-  normed = v: scalePoint (1.0 / (norm v)) v;
+  normalized = v: scalePoint (1.0 / (norm v)) v;
   vectorReflection = v: n: subPoints (scalePoint (2 * (dot v n)) n) v;
 
   sqrt_ = n: i: x: if n == 0 then i else sqrt_ (n - 1) (i - ((i * i - x) / (2 * i))) x;
