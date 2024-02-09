@@ -13,7 +13,7 @@ rec {
     # number of pixels to render along each axis; rays are cast from the center
     # of each pixel/cell in the viewplane
     resolution = {
-      x = 70;
+      x = 120;
       y = builtins.floor (resolution.x * 0.25); # scale to match typical terminal character dimensions
     };
     # if Unicode shape-matching is used for rendering, we can downsample from a
@@ -45,7 +45,8 @@ rec {
       # geometry.faces = map (i: ) [0 1 2];
       # TODO: why does string concatenation fail with index error when this cube is moved...?
       # TODO: clean up interface for rotating objects (and other method-like functions)
-      geometry = let c = Cube (Point 1.5 3.0 0) 1.5; a = 0 / 4; in rotateAbout [0 a a] (meanPoint c) c;
+      geometry = let c = Cube (Point 1.5 2.5 0) 1.5; a = pi / 6; in rotateAbout [0 a a] (meanPoint c) c;
+      # geometry = Cube (Point 1.5 3.0 0) 1.5;
       # geometry = Cube (Point 0 0 0) 1;
 
       material.reflectiveness = 0.5;
@@ -70,7 +71,7 @@ rec {
       position = Point 0 0 0;
       radius = 0.1;
       # TODO: automatically promote values to floats where needed
-      brightness = 3.0;
+      brightness = 5.0;
       type = "light";
 
       phong.specular = brightness;

@@ -45,7 +45,7 @@ with builtins // (import ./utils.nix) ; let
   # TODO: come up with a better way to lift information about operations on
   # `Maybe`s in attrsets to operations on the objects themselves (also clean up
   # the below)
-  firstIntersection = ray: let intersections' = show (intersections ray);
+  firstIntersection = ray: let intersections' = intersections ray;
   in if intersections' == [] then None
   else Some (minBy (x: x.value.t) intersections').value;
   lights = filter (x: x.type == "light") scene.objects;
@@ -57,7 +57,7 @@ with builtins // (import ./utils.nix) ; let
     then scalePoint (-1) n else n;
 
   # trace :: Ray -> Int -> Number
-  trace = ray: depth: let I = show (firstIntersection ray); shading = scene.camera.shading; in
+  trace = ray: depth: let I = (firstIntersection ray); shading = scene.camera.shading; in
   if !I.some then scene.background else
   let p = addPoints ray.origin' (scalePoint I.value.t ray.dir);
     material = I.value.obj.material;

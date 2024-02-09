@@ -113,7 +113,7 @@ with builtins; rec {
 
   foldl1 = op: list: foldl' op (head list) (tail list);
   minBy = f: foldl1 (minBy' f);
-  minBy' = f: x: y: if f(y) >= f(x) then y else x;
+  minBy' = f: x: y: if f(y) <= f(x) then y else x;
   sum = foldl' add 0;
 
   # TODO: find a better name for this...
