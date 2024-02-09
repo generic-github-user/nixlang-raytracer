@@ -55,19 +55,20 @@ with builtins // (import ./utils.nix) ; let
   if !I.some then scene.background else
   let p = addPoints ray.origin' (scalePoint I.value.t ray.dir);
     material = I.value.obj.material;
+    df = if settings.assertions.unit then dotUnit else dot;
     # snormal = normal I.value.face; in
     snormal = I.value.obj.geometry.normalTo I.value.face; in
     # snormal = normalOut (meanPoint I.value.obj.geometry) I.value.face; in
   if shading == "default" then sum (map (l: let lray = rayFrom p l.position;
     in if (firstIntersection lray).some then 0.0 else
-    material.reflectiveness * l.brightness * (dot (normalized lray.dir) snormal)) lights)
+    material.reflectiveness * l.brightness * (df (normalized lray.dir) snormal)) lights)
   else if shading == "phong" then let ph = material.phong; in
     ph.ambient * scene.ambientLight + (sum (map (l: let
     lray = rayFrom' p l.position;
     reflection = vectorReflection lray.dir snormal; in # is this normalized?
     if (firstIntersection lray).some then 0.0 else
-    ph.diffuse * (dot lray.dir snormal) * l.phong.diffuse + ph.specular * (power
-    (show (lib.max 0 (dot (show reflection) (show (normalized (subPoints scene.camera.position p)))))) ph.shininess)
+    ph.diffuse * (df lray.dir snormal) * l.phong.diffuse + ph.specular * (power
+    (lib.max 0 (df reflection (normalized (subPoints scene.camera.position p)))) ph.shininess)
     * l.phong.specular) lights))
   # else if shading == "none" then 1.0
   else throw "invalid shading mode";

@@ -61,7 +61,7 @@ t: rec {
         specular = 0.5;
         diffuse = 0.5;
         ambient = 0.1;
-        shininess = 30;
+        shininess = 60;
       };
       type = "mesh";
 

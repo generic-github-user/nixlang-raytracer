@@ -4,7 +4,8 @@ with builtins; rec {
     math.sqrt.iterations = 10;
     math.sqrt.memoize = true;
     math.taylor_series_iterations = 8;
-    memoizeNormals = false;
+    memoizeNormals = true;
+    assertions.unit = false;
   };
 
   lib = import <nixpkgs/lib>;
@@ -119,6 +120,8 @@ with builtins; rec {
   dot = a: b: foldl' add 0
     (lib.zipListsWith mul (pointToList a) (pointToList b));
   dot' = a: b: sum (lib.zipListsWith mul a b);
+  isUnit = v: abs (1 - (norm v)) <= epsilon;
+  dotUnit = a: b: assert (isUnit a && isUnit b); dot a b;
   # coplanar = points: if length points <= 3 then true else;
 
   # triangulateShape :: Shape -> [Shape]
