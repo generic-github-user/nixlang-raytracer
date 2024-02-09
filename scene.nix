@@ -45,7 +45,7 @@ rec {
       # geometry.faces = map (i: ) [0 1 2];
       # TODO: why does string concatenation fail with index error when this cube is moved...?
       # TODO: clean up interface for rotating objects (and other method-like functions)
-      geometry = let c = Cube (Point 1.5 2.5 0) 1.5; a = pi / 4; in rotate [0 a a] c;
+      geometry = let c = Cube (Point 1.5 2.2 0) 1.5; a = pi / 4; in rotate [a 0 a] c;
       # geometry = Cube (Point 1.5 3.0 0) 1.5;
       # geometry = Cube (Point 0 0 0) 1;
 
@@ -54,9 +54,9 @@ rec {
       material.opacity = 1.0;
       material.phong = {
         specular = 0.5;
-        diffuse = 0.9;
+        diffuse = 0.5;
         ambient = 0.2;
-        shininess = 10;
+        shininess = 80;
       };
       type = "mesh";
 
@@ -68,7 +68,7 @@ rec {
     }
     rec {
       # position = Point 5 (-3) 0;
-      position = Point 0 0 0;
+      position = Point 0 0 3;
       radius = 0.1;
       # TODO: automatically promote values to floats where needed
       brightness = 5.0;

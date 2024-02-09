@@ -1,7 +1,8 @@
 # { settings }:
 with builtins; rec {
   settings = {
-    math.sqrt_iterations = 10;
+    math.sqrt.iterations = 10;
+    math.sqrt.memoize = true;
     math.taylor_series_iterations = 8;
     memoizeNormals = false;
   };
@@ -36,7 +37,8 @@ with builtins; rec {
   Geometry = faces: let memoized = memoizeOn (normalOut (meanPoint g)) faces; g = rec { inherit faces; triangulation = triangulate g; center = meanPoint g; normalTo = if settings.memoizeNormals then memoized else normalOut center; }; in g;
   # Polygon = v:
 
-  memoizeOn = f: values: let h = k: hashString "md5" (toJSON k); dict = listToAttrs (map (v: { name = h v; value = f v; }) values); in (key: getAttr (h key) dict);
+  memoizeOn = f: values: let h = k: hashString "md5" (toJSON k); dict = listToAttrs (map (v: { name = h v; value = f v; }) values); in (key: if hasAttr (h key) dict then getAttr (h key) dict else f key);
+  memoizeInts = f: n: let values = map f (lib.range 0 n); in (i: if i < n && isInt i then elemAt values i else f i);
 
   # TODO: make this a specific case of a more general shape class
   # UnitSquare :: Shape
@@ -187,7 +189,8 @@ with builtins; rec {
   vectorReflection = v: n: subPoints (scalePoint (2 * (dot v n)) n) v;
 
   sqrt_ = n: i: x: if n == 0 then i else sqrt_ (n - 1) (i - ((i * i - x) / (2 * i))) x;
-  sqrt = sqrt_ settings.math.sqrt_iterations 1.0;
+  sqrt = let f = sqrt_ settings.math.sqrt.iterations 1.0; in
+    if settings.math.sqrt.memoize then memoizeInts f 1000 else f;
   power = x: n: iterated (y: y * x) n 1;
 
   # TODO: memoization monad?
