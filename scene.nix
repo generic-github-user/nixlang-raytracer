@@ -38,14 +38,14 @@ rec {
     charset = [" " "░" "▒" "▓" "█"];
     # charset = lib.stringToCharacters "0123456789";
 
-    shading = "default";
+    shading = "phong";
   };
   objects = with utils; [
     {
       # geometry.faces = map (i: ) [0 1 2];
       # TODO: why does string concatenation fail with index error when this cube is moved...?
       # TODO: clean up interface for rotating objects (and other method-like functions)
-      geometry = let c = Cube (Point 1.5 2.5 0) 1.5; a = pi / 6; in rotateAbout [0 a a] (meanPoint c) c;
+      geometry = let c = Cube (Point 1.5 2.5 0) 1.5; a = pi / 4; in rotateAbout [0 a a] (meanPoint c) c;
       # geometry = Cube (Point 1.5 3.0 0) 1.5;
       # geometry = Cube (Point 0 0 0) 1;
 
@@ -66,7 +66,7 @@ rec {
       test2 = dot (Point 1 1 2) (Point 2 2 2);
       # visibleFromCamera
     }
-    {
+    rec {
       # position = Point 5 (-3) 0;
       position = Point 0 0 0;
       radius = 0.1;

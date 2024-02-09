@@ -20,6 +20,7 @@ with builtins; rec {
   Point = a: b: c: { x = a; y = b; z = c; };
   Ray = o: d: { origin' = o; dir = d; };
   rayFrom = a: b: { origin' = a; dir = subPoints b a; };
+  rayFrom' = a: b: { origin' = a; dir = normed (subPoints b a); };
   origin = Point 0 0 0;
 
   # liftPoint :: Int -> Number -> Point2D -> Point3D

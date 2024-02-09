@@ -68,10 +68,10 @@ with builtins // (import ./utils.nix) ; let
     material.reflectiveness * l.brightness * (dot (normed lray.dir) snormal)) lights)
   else if shading == "phong" then let ph = material.phong; in
     ph.ambient * scene.ambientLight + (sum (map (l: let
-    lray = rayFrom p l.position;
-    reflection = vectorReflection (normed lray.dir) snormal; in # is this normalized?
-    if (show (firstIntersection lray)).some then 0.0 else
-    ph.diffuse * (dot lray snormal) * l.phong.diffuse + ph.specular * (power
+    lray = rayFrom' p l.position;
+    reflection = vectorReflection lray.dir snormal; in # is this normalized?
+    if (firstIntersection lray).some then 0.0 else
+    ph.diffuse * (dot lray.dir snormal) * l.phong.diffuse + ph.specular * (power
     (dot reflection (normed (subPoints scene.camera.position p))) ph.shininess)
     * l.phong.specular) lights))
   # else if shading == "none" then 1.0
