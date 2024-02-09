@@ -1,7 +1,7 @@
-scene':
+# { scene', sceneParams ? {} , ... } :
+scene:
 with builtins // (import ./utils.nix) ; let
   lib = import <nixpkgs/lib>;
-  scene = import scene';
   # adapted from https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm#C++_implementation
   # intersects :: Ray -> Shape -> Maybe Number
   # intersects__type = fn [ Ray Shape ] (Maybe.type Number);

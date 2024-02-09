@@ -1,11 +1,11 @@
-rec {
+t: rec {
   utils = import ./utils.nix;
   lib = import <nixpkgs/lib>;
   background = 0.1;
   ambientLight = 0.1;
   camera = with utils; rec {
-    position = Point 1.5 0 0.5;
-    angle = [(-0.1) 0 0];
+    position = Point 1.5 0 1.0;
+    angle = [(0) 0 0];
 
     # distance between camera and viewplane
     focalLength = 0.2;
@@ -50,7 +50,7 @@ rec {
       # geometry.faces = map (i: ) [0 1 2];
       # TODO: why does string concatenation fail with index error when this cube is moved...?
       # TODO: clean up interface for rotating objects (and other method-like functions)
-      geometry = let c = Cube (Point 1.5 2.2 0) 1.5; a = pi / 4; in rotate [0.7 0 0.7] c;
+      geometry = let c = Cube (Point 1.5 2.2 0) 1.5; a = pi / 4; b = [0 0 (t * 0.1)]; in rotate [0.7 0 0.6] c;
       # geometry = Cube (Point 1.5 3.0 0) 1.5;
       # geometry = Cube (Point 0 0 0) 1;
 
@@ -61,7 +61,7 @@ rec {
         specular = 0.5;
         diffuse = 0.5;
         ambient = 0.1;
-        shininess = 80;
+        shininess = 150;
       };
       type = "mesh";
 
@@ -73,7 +73,7 @@ rec {
     }
     rec {
       # position = Point 5 (-3) 0;
-      position = Point 2 (-1) 2;
+      position = Point 1 (-1) 1;
       radius = 0.1;
       # TODO: automatically promote values to floats where needed
       brightness = 5.0;
