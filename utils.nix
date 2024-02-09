@@ -1,4 +1,10 @@
-{ settings }: with builtins; rec {
+# { settings }:
+with builtins; rec {
+  settings = {
+    math.sqrt_iterations = 10;
+    math.taylor_series_iterations = 5;
+  };
+
   lib = import <nixpkgs/lib>;
 
   # setAt = i: x: xs: 

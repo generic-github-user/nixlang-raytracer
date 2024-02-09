@@ -1,10 +1,5 @@
 scene':
-with builtins // ((import ./utils.nix) {
-  settings = {
-    math.sqrt_iterations = 10;
-    math.taylor_series_iterations = 5;
-  };
-}); let
+with builtins // (import ./utils.nix) ; let
   lib = import <nixpkgs/lib>;
   scene = import scene';
   # adapted from https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm#C++_implementation
