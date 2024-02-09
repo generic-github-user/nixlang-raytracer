@@ -2,7 +2,7 @@
 with builtins; rec {
   settings = {
     math.sqrt_iterations = 10;
-    math.taylor_series_iterations = 5;
+    math.taylor_series_iterations = 8;
   };
 
   lib = import <nixpkgs/lib>;
@@ -13,6 +13,7 @@ with builtins; rec {
   insertAt = i: x: xs: (lib.take i xs) ++ [x] ++ (lib.drop i xs);
 
   rot90 = { x, y }: { x = -y; y = x; };
+  rot90' = { x, y }: { x = -x; y = y; };
   # rot90About 
 
   # PointType = Type { x = Number; y = Number; z = Number; }
@@ -120,7 +121,7 @@ with builtins; rec {
   min2D = foldl1-2D lib.min;
   max2D = foldl1-2D lib.max;
 
-  mapRange = a1: a2: b1: b2: x: (x - a1) * (b2 - b1) / (a2 - a1) + b1;
+  mapRange = a1: a2: b1: b2: x: (x - a1) * (b2 - b1) / (a2 - a1 + epsilon) + b1;
   map2D = f: map (map f);
   epsilon = 0.00000001;
   clip = low: high: x: lib.max low (lib.min high x);
@@ -130,6 +131,7 @@ with builtins; rec {
   # slow, inaccurate, etc. -- works for now
   sin_ = x: n: sum (iterate' (y: i: y * -1 / (2 * i * (2 * i + 1)) * x * x) n x 1);
   sin = x: if x < 0 then sin (-x)
+  else if x <= epsilon then 0
   else if x <= (pi / 2) then sin_ x settings.math.taylor_series_iterations
   else if x < pi then sin (pi - x)
   else if x < 2 * pi then -sin (x - pi)

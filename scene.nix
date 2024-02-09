@@ -1,6 +1,6 @@
 rec {
   utils = import ./utils.nix;
-  background = 0.01;
+  background = 0.2;
   ambientLight = 0.1;
   camera = with utils; rec {
     position = Point 1.5 0 0.5;
@@ -13,7 +13,7 @@ rec {
     # number of pixels to render along each axis; rays are cast from the center
     # of each pixel/cell in the viewplane
     resolution = {
-      x = 120;
+      x = 70;
       y = builtins.floor (resolution.x * 0.25); # scale to match typical terminal character dimensions
     };
     # if Unicode shape-matching is used for rendering, we can downsample from a
@@ -38,14 +38,14 @@ rec {
     charset = [" " "░" "▒" "▓" "█"];
     # charset = lib.stringToCharacters "0123456789";
 
-    shading = "phong";
+    shading = "default";
   };
   objects = with utils; [
     {
       # geometry.faces = map (i: ) [0 1 2];
       # TODO: why does string concatenation fail with index error when this cube is moved...?
       # TODO: clean up interface for rotating objects (and other method-like functions)
-      geometry = let c = Cube (Point 1.0 2.0 0) 1.5; in rotateAbout [0 (pi / 4) (pi / 4)] (meanPoint c) c;
+      geometry = let c = Cube (Point 1.5 3.0 0) 1.5; a = 0 / 4; in rotateAbout [0 a a] (meanPoint c) c;
       # geometry = Cube (Point 0 0 0) 1;
 
       material.reflectiveness = 0.5;
@@ -53,9 +53,9 @@ rec {
       material.opacity = 1.0;
       material.phong = {
         specular = 0.5;
-        diffuse = 0.5;
-        ambient = 0.5;
-        shininess = 20;
+        diffuse = 0.9;
+        ambient = 0.2;
+        shininess = 10;
       };
       type = "mesh";
 
@@ -67,14 +67,14 @@ rec {
     }
     {
       # position = Point 5 (-3) 0;
-      position = Point 0 0 5;
+      position = Point 0 0 0;
       radius = 0.1;
       # TODO: automatically promote values to floats where needed
       brightness = 3.0;
       type = "light";
 
-      phong.specular = 0.4;
-      phong.diffuse = 0.4;
+      phong.specular = brightness;
+      phong.diffuse = brightness;
     }
   ];
 }
