@@ -1,6 +1,7 @@
 rec {
   utils = import ./utils.nix;
-  background = 0.2;
+  lib = import <nixpkgs/lib>;
+  background = 0.1;
   ambientLight = 0.1;
   camera = with utils; rec {
     position = Point 1.5 0 0.5;
@@ -26,6 +27,8 @@ rec {
     # number of rays to cast per pixel (only improves image quality if
     # stochastic rendering/lighting modes are used)
     samples = 1;
+    # filter to apply to each pixel after rendering
+    postprocess = lib.id;
 
     # if `true`, the color palette will be automatically scaled/translated to
     # match the range of brightness values in the image
@@ -45,7 +48,7 @@ rec {
       # geometry.faces = map (i: ) [0 1 2];
       # TODO: why does string concatenation fail with index error when this cube is moved...?
       # TODO: clean up interface for rotating objects (and other method-like functions)
-      geometry = let c = Cube (Point 1.5 2.2 0) 1.5; a = pi / 4; in rotate [a 0 a] c;
+      geometry = let c = Cube (Point 1.5 2.2 0) 1.5; a = pi / 4; in rotate [0.7 0 0.7] c;
       # geometry = Cube (Point 1.5 3.0 0) 1.5;
       # geometry = Cube (Point 0 0 0) 1;
 
@@ -55,7 +58,7 @@ rec {
       material.phong = {
         specular = 0.5;
         diffuse = 0.5;
-        ambient = 0.2;
+        ambient = 0.1;
         shininess = 80;
       };
       type = "mesh";
@@ -68,7 +71,7 @@ rec {
     }
     rec {
       # position = Point 5 (-3) 0;
-      position = Point 0 0 3;
+      position = Point 2 (-1) 2;
       radius = 0.1;
       # TODO: automatically promote values to floats where needed
       brightness = 5.0;

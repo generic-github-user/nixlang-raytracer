@@ -91,6 +91,7 @@ with builtins // (import ./utils.nix) ; let
   # test4 = intersections { origin' = origin; dir = Point 1 1 1.1; };
 in let c = camera; in
   # builtins.trace (let x = frame; in deepSeq x x)
+  # frame
   (lib.concatStringsSep "\n" (map lib.concatStrings
-  (map2D (if c.remapColors then (getChar (min2D frame) (max2D frame)) else
-  (getChar c.colorRange.low c.colorRange.high)) frame)))
+  (map2D (compose (if c.remapColors then (getChar (min2D frame) (max2D frame)) else
+  (getChar c.colorRange.low c.colorRange.high)) c.postprocess) frame)))

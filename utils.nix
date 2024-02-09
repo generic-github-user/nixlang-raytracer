@@ -145,9 +145,11 @@ with builtins; rec {
   pi = 3.14159265358979323846264338;
   fmod = x: m: x - (floor (x / m)) * m;
   # slow, inaccurate, etc. -- works for now
+  # taylor series used for 0 to pi/2
   sin_ = x: n: sum (iterate' (y: i: y * -1 / (2 * i * (2 * i + 1)) * x * x) n x 1);
   sin = x: if x < 0 then sin (-x)
   else if x <= epsilon then 0
+  # apply symmetry to get values outside of [0, pi/2]
   else if x <= (pi / 2) then sin_ x settings.math.taylor_series_iterations
   else if x < pi then sin (pi - x)
   else if x < 2 * pi then -sin (x - pi)
