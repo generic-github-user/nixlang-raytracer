@@ -67,7 +67,7 @@ with builtins // (import ./utils.nix) ; let
     reflection = vectorReflection lray.dir snormal; in # is this normalized?
     if (firstIntersection lray).some then 0.0 else
     ph.diffuse * (dot lray.dir snormal) * l.phong.diffuse + ph.specular * (power
-    (dot reflection (normalized (subPoints scene.camera.position p))) ph.shininess)
+    (show (lib.max 0 (dot (show reflection) (show (normalized (subPoints scene.camera.position p)))))) ph.shininess)
     * l.phong.specular) lights))
   # else if shading == "none" then 1.0
   else throw "invalid shading mode";

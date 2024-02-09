@@ -188,7 +188,8 @@ with builtins; rec {
   abs = x: if x < 0 then -x else x;
   norm = v: sqrt (dot v v);
   normalized = v: scalePoint (1.0 / (norm v)) v;
-  vectorReflection = v: n: subPoints (scalePoint (2 * (dot v n)) n) v;
+  vectorReflection = v: n: assert (norm n == 1); subPoints (scalePoint (2 * (dot v n)) n) v;
+  vectorReflection_test = vectorReflection (Point 2 1 0.5) (Point 0 0 1);
 
   sqrt_ = n: i: x: if n == 0 then i else sqrt_ (n - 1) (i - ((i * i - x) / (2 * i))) x;
   sqrt = let f = sqrt_ settings.math.sqrt.iterations 1.0; in

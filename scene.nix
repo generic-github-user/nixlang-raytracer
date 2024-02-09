@@ -1,7 +1,7 @@
 t: rec {
   utils = import ./utils.nix;
   lib = import <nixpkgs/lib>;
-  background = 0.1;
+  background = 0.05;
   ambientLight = 0.1;
   camera = with utils; rec {
     position = Point 1.5 0 1.0;
@@ -61,7 +61,7 @@ t: rec {
         specular = 0.5;
         diffuse = 0.5;
         ambient = 0.1;
-        shininess = 150;
+        shininess = 30;
       };
       type = "mesh";
 
@@ -73,14 +73,15 @@ t: rec {
     }
     rec {
       # position = Point 5 (-3) 0;
-      position = Point 1 (-1) 1;
+      # position = Point 1 (-1) 1;
+      position = camera.position;
       radius = 0.1;
       # TODO: automatically promote values to floats where needed
-      brightness = 5.0;
+      brightness = 1.0;
       type = "light";
 
-      phong.specular = brightness;
-      phong.diffuse = brightness;
+      phong.specular = 0.5;
+      phong.diffuse = 0.6;
     }
   ];
 }
