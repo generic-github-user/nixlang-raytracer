@@ -74,10 +74,10 @@ with builtins // (import ./utils.nix) ; let
 
   camera = scene.camera;
   frame = let c = camera; in lib.reverseList (genMatrix (x: y:
-  let p = Point
+  let p = rotatePointAbout c.angle c.position (Point
     (c.position.x - c.width / 2 + (x + 0.5) * (c.width / c.resolution.x))
     c.focalLength
-    (c.position.z - c.height / 2 + (y + 0.5) * (c.height / c.resolution.y));
+    (c.position.z - c.height / 2 + (y + 0.5) * (c.height / c.resolution.y)));
     in trace (Ray p (subPoints p c.position)) 5) c.resolution.x c.resolution.y);
     
   # getChar :: Number -> Number -> Number -> String

@@ -5,6 +5,8 @@ rec {
   ambientLight = 0.1;
   camera = with utils; rec {
     position = Point 1.5 0 0.5;
+    angle = [(-0.1) 0 0];
+
     # distance between camera and viewplane
     focalLength = 0.2;
     # dimensions of the viewplane (rays are cast from camera.position through
