@@ -83,7 +83,8 @@ with builtins // (import ./utils.nix) ; let
     
   # getChar :: Number -> Number -> Number -> String
   getChar = min': max': v: let l = length camera.charset - 1.0; in
-    elemAt camera.charset (floor (clip 0.0 l (mapRange min' max' 0.0 l v)));
+  if camera.useANSI then let i = floor (mapRange min' max' 232 255 v); in "\\033[38;5;${toString i}m█\\033[0m"
+  else elemAt camera.charset (floor (clip 0.0 l (mapRange min' max' 0.0 l v)));
 
   # test1 = intersects { origin' = origin; dir = Point 1 1 1; }
     # [(Point 5 0 0) (Point 0 5 0) (Point 0 0 5)];

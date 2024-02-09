@@ -42,6 +42,7 @@ t: rec {
     # charset = lib.stringToCharacters "░▒▓█";
     charset = [" " "░" "▒" "▓" "█"];
     # charset = lib.stringToCharacters "0123456789";
+    useANSI = true;
 
     shading = "phong";
   };
