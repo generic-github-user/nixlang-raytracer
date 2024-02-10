@@ -4,14 +4,15 @@ t: rec {
   background = 0.05;
   ambientLight = 0.1;
   camera = with utils; rec {
-    position = Point 1.5 0 1.0;
-    angle = [(0) 0 0];
+    position = Point 1.5 0 2.5;
+    # TODO: fix rotation bug
+    angle = [(-0.7) 0 0];
 
     # distance between camera and viewplane
-    focalLength = 0.2;
+    focalLength = 0.18;
     # dimensions of the viewplane (rays are cast from camera.position through
     # this plane and into the scene; it corresponds to the rendered image)
-    width = 0.5;
+    width = 0.4;
     height = width * 0.5;
     # number of pixels to render along each axis; rays are cast from the center
     # of each pixel/cell in the viewplane
@@ -51,7 +52,7 @@ t: rec {
       # geometry.faces = map (i: ) [0 1 2];
       # TODO: why does string concatenation fail with index error when this cube is moved...?
       # TODO: clean up interface for rotating objects (and other method-like functions)
-      geometry = let c = Cube (Point 1.5 2.2 0) 1.5; a = pi / 4; b = [0 0 (t * 0.1)]; in rotate [0.7 0 0.6] c;
+      geometry = let c = Cube (Point 1.0 1.6 0) 1.5; a = pi / 4; b = [0 0 (t * 0.1)]; in rotate b c;
       # geometry = Cube (Point 1.5 3.0 0) 1.5;
       # geometry = Cube (Point 0 0 0) 1;
 
@@ -74,8 +75,8 @@ t: rec {
     }
     rec {
       # position = Point 5 (-3) 0;
-      # position = Point 1 (-1) 1;
-      position = camera.position;
+      position = Point 1 (-1) 2.5;
+      # position = camera.position;
       radius = 0.1;
       # TODO: automatically promote values to floats where needed
       brightness = 1.0;

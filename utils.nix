@@ -150,7 +150,7 @@ with builtins; rec {
   # slow, inaccurate, etc. -- works for now
   # taylor series used for 0 to pi/2
   sin_ = x: n: sum (iterate' (y: i: y * -1 / (2 * i * (2 * i + 1)) * x * x) n x 1);
-  sin = x: if x < 0 then sin (-x)
+  sin = x: if x < 0 then -sin (-x)
   else if x <= epsilon then 0
   # apply symmetry to get values outside of [0, pi/2]
   else if x <= (pi / 2) then sin_ x settings.math.taylor_series_iterations
@@ -187,11 +187,12 @@ with builtins; rec {
     (rotatePoint angle) ((lib.flip subPoints) p')];
   rotateAbout = angle: p': mapPoints (rotatePointAbout angle p');
   rotate = angle: g: (rotateAbout angle g.center) g;
+  rotatePointAbout_test = rotatePointAbout [(-pi / 4) 0 0] origin (Point 1 0.5 0);
 
   abs = x: if x < 0 then -x else x;
   norm = v: sqrt (dot v v);
   normalized = v: scalePoint (1.0 / (norm v)) v;
-  vectorReflection = v: n: assert (norm n == 1); subPoints (scalePoint (2 * (dot v n)) n) v;
+  vectorReflection = v: n: assert isUnit n; subPoints (scalePoint (2 * (dot v n)) n) v;
   vectorReflection_test = vectorReflection (Point 2 1 0.5) (Point 0 0 1);
 
   sqrt_ = n: i: x: if n == 0 then i else sqrt_ (n - 1) (i - ((i * i - x) / (2 * i))) x;
