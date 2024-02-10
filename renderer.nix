@@ -27,6 +27,9 @@ with builtins // (import ./utils.nix) ; let
         if t > epsilon then Some t
         else None;
 
+  intersectsObject = ray: object: any (f: (intersects ray f).some) object.geometry.faces;
+  intersectsAny = ray: any (intersectsObject ray) meshes;
+
   # could also flatten objects into a set of triangles + their associated
   # materials, this seemed slightly cleaner/more efficient; this should be
   # equivalent to a filter for intersections followed by a minimum over the
@@ -38,9 +41,8 @@ with builtins // (import ./utils.nix) ; let
   # lower-level functions...
 
   # intersections :: Ray -> [Intersection]
-  intersections = ray: filter (x: x.some) (map (o: (let o' = o // {
-    geometry = o.geometry.triangulation; }; in Maybe.zipWith' lib.mergeAttrs
-    (Some { obj = o'; }) (firstIntersectionWith ray o'))) meshes);
+  intersections = ray: filter (x: x.some) (map (o: Maybe.zipWith' lib.mergeAttrs
+  (Some { obj = o; }) (firstIntersectionWith ray o)) meshes);
 
   # TODO: come up with a better way to lift information about operations on
   # `Maybe`s in attrsets to operations on the objects themselves (also clean up
@@ -48,8 +50,10 @@ with builtins // (import ./utils.nix) ; let
   firstIntersection = ray: let intersections' = intersections ray;
   in if intersections' == [] then None
   else Some (minBy (x: x.value.t) intersections').value;
+
   lights = filter (x: x.type == "light") scene.objects;
-  meshes = filter (o: o.type == "mesh" && !(o.hidden or false)) scene.objects;
+  meshes = map (o: o // { geometry = o.geometry.triangulation; })
+    (filter (o: o.type == "mesh" && !(o.hidden or false)) scene.objects);
 
   # trace :: Ray -> Int -> Number
   trace = ray: depth: let I = (firstIntersection ray); shading = scene.camera.shading; in
@@ -61,14 +65,14 @@ with builtins // (import ./utils.nix) ; let
     snormal = I.value.obj.geometry.normalTo I.value.face; in
     # snormal = normalOut (meanPoint I.value.obj.geometry) I.value.face; in
   if shading == "default" then sum (map (l: let lray = rayFrom p l.position;
-    in if (firstIntersection lray).some then 0.0 else
+    in if intersectsAny lray then 0.0 else
     material.reflectiveness * l.brightness * (df (normalized lray.dir) snormal)) lights)
   else if shading == "phong" then let ph = material.phong; in
     ph.ambient * scene.ambientLight + (sum (map (l: let
     lray = rayFrom' p l.position;
     reflection = vectorReflection lray.dir snormal; in # is this normalized?
     # TODO: this is almost definitely not lazily evaluated, needs fixing
-    if (firstIntersection lray).some then 0.0 else
+    if intersectsAny lray then 0.0 else
     ph.diffuse * (df lray.dir snormal) * l.phong.diffuse + ph.specular * (power
     (lib.max 0 (df reflection (normalized (subPoints scene.camera.position p)))) ph.shininess)
     * l.phong.specular) lights))
