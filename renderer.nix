@@ -57,26 +57,35 @@ with builtins // (import ./utils.nix) ; let
     (filter (o: o.type == "mesh" && !(o.hidden or false)) scene.objects);
 
   # trace :: Ray -> Int -> Number
-  trace = ray: depth: let I = (firstIntersection ray); shading = scene.camera.shading; in
+  trace = ray: depth: let
+    I = (firstIntersection ray);
+    shading = scene.camera.shading; in
   if !I.some then scene.background else
   let p = addPoints ray.origin' (scalePoint I.value.t ray.dir);
     material = I.value.obj.material;
     df = if settings.assertions.unit then dotUnit else dot;
     snormal = I.value.obj.geometry.normalTo I.value.face; in
     # snormal = normalOut (meanPoint I.value.obj.geometry) I.value.face; in
+
   if shading == "default" then sum (map (l: let lray = rayFrom p l.position;
     in if intersectsAny lray then 0.0 else
     material.reflectiveness * l.brightness * (df (normalized lray.dir) snormal)) lights)
+
   # see, e.g., https://en.wikipedia.org/wiki/Phong_reflection_model
   else if shading == "phong" then let ph = material.phong; in
-    ph.ambient * scene.ambientLight + (sum (map (l: let
+    ph.ambient * scene.ambientLight +
+
+    (sum (map (l: let
     lray = rayFrom' p l.position;
     reflection = vectorReflection lray.dir snormal; in
     # TODO: this is almost definitely not lazily evaluated/short-circuited, needs fixing
     if intersectsAny lray then 0.0 else
     ph.diffuse * (df lray.dir snormal) * l.phong.diffuse + ph.specular * (power
-    (lib.max 0 (df reflection (normalized (subPoints scene.camera.position p)))) ph.shininess)
-    * l.phong.specular) lights))
+    (lib.max 0 (df reflection (normalized (subPoints scene.camera.position
+    p)))) ph.shininess) * l.phong.specular) lights)) +
+
+    (if scene.camera.recursive && depth > 0 then trace (Ray p (vectorReflection
+    ray.dir snormal)) (depth - 1) else 0.0) * 0.1
   # else if shading == "none" then 1.0
   else throw "invalid shading mode";
 

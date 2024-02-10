@@ -45,7 +45,7 @@
     useANSI = true;
 
     shading = "phong";
-    recursive = true;
+    recursive = false;
     depth = 5;
   };
   objects = with utils; let material1 = {
