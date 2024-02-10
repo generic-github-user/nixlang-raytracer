@@ -1,7 +1,8 @@
 # { scene', sceneParams ? {} , ... } :
-scene:
+scene':
 with builtins // (import ./utils.nix) ; let
   lib = import <nixpkgs/lib>;
+  scene = (import scene') 0;
   # adapted from https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm#C++_implementation
   # intersects :: Ray -> Shape -> Maybe Number
   # intersects__type = fn [ Ray Shape ] (Maybe.type Number);
@@ -39,7 +40,7 @@ with builtins // (import ./utils.nix) ; let
 
   # TODO: clean this up
   # intersections :: Ray -> [Intersection]
-  intersections = ray: let meshes = filter (o: o.type == "mesh") scene.objects; in
+  intersections = ray: let meshes = filter (o: o.type == "mesh" && !(o.hidden or false)) scene.objects; in
   (filter (x: x.some) (map (o: (let o' = o // { geometry = o.geometry.triangulation; };
   in Maybe.zipWith' lib.mergeAttrs (Some { obj = o'; }) (firstIntersectionWith ray o'))) meshes));
   # TODO: come up with a better way to lift information about operations on
@@ -79,7 +80,7 @@ with builtins // (import ./utils.nix) ; let
     (c.position.x - c.width / 2 + (x + 0.5) * (c.width / c.resolution.x))
     c.focalLength
     (c.position.z - c.height / 2 + (y + 0.5) * (c.height / c.resolution.y)));
-    in trace (Ray p (subPoints p c.position)) 5) c.resolution.x c.resolution.y);
+    in trace (Ray p (subPoints p c.position)) c.depth) c.resolution.x c.resolution.y);
     
   # getChar :: Number -> Number -> Number -> String
   getChar = min': max': v: let l = length camera.charset - 1.0; in

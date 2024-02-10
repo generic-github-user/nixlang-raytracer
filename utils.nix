@@ -36,6 +36,7 @@ with builtins; rec {
   # liftPoint :: Int -> Number -> Point2D -> Point3D
   liftPoint = axis: w: p: listToPoint (insertAt axis w (pointToList p));
   Geometry = faces: let memoized = memoizeOn (normalOut (meanPoint g)) faces; g = rec { inherit faces; triangulation = triangulate g; center = meanPoint g; normals = map (normalOut center) faces; normalTo = if settings.memoizeNormals then memoized else normalOut center; }; in g;
+  union = xs: Geometry (concatMap (x: x.faces) xs);
   # Polygon = v:
 
   memoizeOn = f: values: let h = k: hashString "md5" (toJSON k); dict = listToAttrs (map (v: { name = h v; value = f v; }) values); in (key: if hasAttr (h key) dict then getAttr (h key) dict else f key);

@@ -4,7 +4,7 @@ t: rec {
   background = 0.05;
   ambientLight = 0.1;
   camera = with utils; rec {
-    position = Point 1.5 0 2.5;
+    position = Point 1.5 0 2.3;
     # TODO: fix rotation bug
     angle = [(-0.7) 0 0];
 
@@ -17,7 +17,7 @@ t: rec {
     # number of pixels to render along each axis; rays are cast from the center
     # of each pixel/cell in the viewplane
     resolution = {
-      x = 120;
+      x = 100;
       y = builtins.floor (resolution.x * 0.25); # scale to match typical terminal character dimensions
     };
     # if Unicode shape-matching is used for rendering, we can downsample from a
@@ -46,8 +46,20 @@ t: rec {
     useANSI = true;
 
     shading = "phong";
+    recursive = true;
+    depth = 5;
   };
-  objects = with utils; [
+  objects = with utils; let material1 = {
+      reflectiveness = 0.5;
+      diffusion = 0.5;
+      opacity = 1.0;
+      phong = {
+        specular = 0.5;
+        diffuse = 0.5;
+        ambient = 0.1;
+        shininess = 60;
+      };
+  }; in [
     {
       # geometry.faces = map (i: ) [0 1 2];
       # TODO: why does string concatenation fail with index error when this cube is moved...?
@@ -55,16 +67,9 @@ t: rec {
       geometry = let c = Cube (Point 1.0 1.6 0) 1.5; a = pi / 4; b = [0 0 (t * 0.1)]; in rotate b c;
       # geometry = Cube (Point 1.5 3.0 0) 1.5;
       # geometry = Cube (Point 0 0 0) 1;
+      material = material1;
+      hidden = true;
 
-      material.reflectiveness = 0.5;
-      material.diffusion = 0.5;
-      material.opacity = 1.0;
-      material.phong = {
-        specular = 0.5;
-        diffuse = 0.5;
-        ambient = 0.1;
-        shininess = 60;
-      };
       type = "mesh";
 
       # test = UnitSquare;
@@ -73,9 +78,17 @@ t: rec {
       test2 = dot (Point 1 1 2) (Point 2 2 2);
       # visibleFromCamera
     }
+    {
+      geometry = rotate [0 0 (pi / 8)] (scale 0.5 (union (map (p: Cube
+      (addPoints p (Point 1.3 2.4 0)) 1.0) (builtins.filter (p: lib.mod
+      (p.x+p.y+p.z) 2 == 0) (let w = [0 1 2]; in lib.cartesianProductOfSets { x
+      = w; y = w; z = w; })))));
+      material = material1;
+      type = "mesh";
+    }
     rec {
       # position = Point 5 (-3) 0;
-      position = Point 1 (-1) 2.5;
+      position = Point 3 (-1) 2.5;
       # position = camera.position;
       radius = 0.1;
       # TODO: automatically promote values to floats where needed
