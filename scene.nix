@@ -16,7 +16,7 @@
     # number of pixels to render along each axis; rays are cast from the center
     # of each pixel/cell in the viewplane
     resolution = {
-      x = 100;
+      x = 200;
       # scale to match typical terminal character dimensions
       y = builtins.floor (resolution.x * 0.25);
     };
@@ -60,7 +60,7 @@
       };
   }; in [
     {
-      geometry = let c = Cube (Point 1.0 1.6 0) 1.5; a = pi / 4; b = [0 0 (t * 0.1)];
+      geometry = let c = Cube (Point 0.8 1.6 0) 1.5; a = pi / 4; b = [0 0 (pi / 4)];
         in rotate b c;
       material = material1;
       hidden = true;
@@ -72,6 +72,7 @@
       (p.x+p.y+p.z) 2 == 0) (let w = [0 1 2]; in lib.cartesianProductOfSets { x
       = w; y = w; z = w; })))));
       material = material1;
+      hidden = false;
       type = "mesh";
     }
     rec {
@@ -80,8 +81,8 @@
       brightness = 3.0;
       type = "light";
 
-      phong.specular = 1.0;
-      phong.diffuse = 0.6;
+      phong.specular = 1.2;
+      phong.diffuse = 0.8;
     }
   ];
 }
