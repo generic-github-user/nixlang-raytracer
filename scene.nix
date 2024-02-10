@@ -1,4 +1,4 @@
-t: rec {
+{ t ? 0 }: rec {
   utils = import ./utils.nix;
   lib = import <nixpkgs/lib>;
   background = 0.05;
@@ -16,7 +16,7 @@ t: rec {
     # number of pixels to render along each axis; rays are cast from the center
     # of each pixel/cell in the viewplane
     resolution = {
-      x = 200;
+      x = 100;
       # scale to match typical terminal character dimensions
       y = builtins.floor (resolution.x * 0.25);
     };
@@ -35,11 +35,11 @@ t: rec {
 
     # if `true`, the color palette will be automatically scaled/translated to
     # match the range of brightness values in the image
-    remapColors = true;
+    remapColors = false;
     # raw pixel value/color range to be mapped onto the character set; only
     # used if remapColors is disabled
     colorRange.low = 0.0;
-    colorRange.high = 0.1;
+    colorRange.high = 0.25;
     charset = [" " "░" "▒" "▓" "█"];
     # charset = lib.stringToCharacters "0123456789";
     useANSI = true;
@@ -67,7 +67,7 @@ t: rec {
       type = "mesh";
     }
     {
-      geometry = rotate [0 0 (pi / 8)] (scale 0.5 (union (map (p: Cube
+      geometry = rotate [0 0 (t * 2 * pi / 30)] (scale 0.5 (union (map (p: Cube
       (addPoints p (Point 1.3 2.4 0)) 1.0) (builtins.filter (p: lib.mod
       (p.x+p.y+p.z) 2 == 0) (let w = [0 1 2]; in lib.cartesianProductOfSets { x
       = w; y = w; z = w; })))));

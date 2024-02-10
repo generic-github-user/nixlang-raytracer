@@ -1,8 +1,8 @@
-# { scene', sceneParams ? {} , ... } :
-scene':
+{ scene', sceneParams ? {} , ... } :
+# scene':
 with builtins // (import ./utils.nix) ; let
   lib = import <nixpkgs/lib>;
-  scene = (import scene') 0;
+  scene = (import scene') sceneParams;
   # adapted from https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm#C++_implementation
   # intersects :: Ray -> Shape -> Maybe Number
   intersects = ray@{ origin', dir }: triangle:
@@ -38,10 +38,9 @@ with builtins // (import ./utils.nix) ; let
   # lower-level functions...
 
   # intersections :: Ray -> [Intersection]
-  intersections = ray: let meshes = filter (o: o.type == "mesh" && !(o.hidden
-  or false)) scene.objects; in (filter (x: x.some) (map (o: (let o' = o // {
+  intersections = ray: filter (x: x.some) (map (o: (let o' = o // {
     geometry = o.geometry.triangulation; }; in Maybe.zipWith' lib.mergeAttrs
-    (Some { obj = o'; }) (firstIntersectionWith ray o'))) meshes));
+    (Some { obj = o'; }) (firstIntersectionWith ray o'))) meshes);
 
   # TODO: come up with a better way to lift information about operations on
   # `Maybe`s in attrsets to operations on the objects themselves (also clean up
@@ -50,6 +49,7 @@ with builtins // (import ./utils.nix) ; let
   in if intersections' == [] then None
   else Some (minBy (x: x.value.t) intersections').value;
   lights = filter (x: x.type == "light") scene.objects;
+  meshes = filter (o: o.type == "mesh" && !(o.hidden or false)) scene.objects;
 
   # trace :: Ray -> Int -> Number
   trace = ray: depth: let I = (firstIntersection ray); shading = scene.camera.shading; in
@@ -89,6 +89,6 @@ with builtins // (import ./utils.nix) ; let
 
 in let c = camera; in
   # builtins.trace (let x = frame; in deepSeq x x)
-  (lib.concatStringsSep "\n" (map lib.concatStrings
+  builtins.trace sceneParams (lib.concatStringsSep "\n" (map lib.concatStrings
   (map2D (compose (if c.remapColors then (getChar (min2D frame) (max2D frame)) else
   (getChar c.colorRange.low c.colorRange.high)) c.postprocess) frame)))

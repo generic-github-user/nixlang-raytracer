@@ -146,7 +146,7 @@ with builtins; rec {
   min2D = foldl1-2D lib.min;
   max2D = foldl1-2D lib.max;
 
-  mapRange = a1: a2: b1: b2: x: (x - a1) * (b2 - b1) / (a2 - a1 + epsilon) + b1;
+  mapRange = a1: a2: b1: b2: x: clip b1 b2 ((x - a1) * (b2 - b1) / (a2 - a1 + epsilon) + b1);
   map2D = f: map (map f);
   epsilon = 0.00000001;
   clip = low: high: x: lib.max low (lib.min high x);
