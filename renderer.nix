@@ -65,7 +65,6 @@ with builtins // (import ./utils.nix) ; let
     material = I.value.obj.material;
     df = if settings.assertions.unit then dotUnit else dot;
     snormal = I.value.obj.geometry.normalTo I.value.face; in
-    # snormal = normalOut (meanPoint I.value.obj.geometry) I.value.face; in
 
   if shading == "default" then sum (map (l: let lray = rayFrom p l.position;
     in if intersectsAny lray then 0.0 else

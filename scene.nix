@@ -20,16 +20,6 @@
       # scale to match typical terminal character dimensions
       y = builtins.floor (resolution.x * 0.25);
     };
-    # if Unicode shape-matching is used for rendering, we can downsample from a
-    # higher resolution to produce higher-resolution edges; otherwise, the
-    # pixels are just averaged (can be used for antialiasing)
-    resample = {
-      x = 2;
-      y = 2;
-    };
-    # number of rays to cast per pixel (only improves image quality if
-    # stochastic rendering/lighting modes are used)
-    samples = 1;
     # filter to apply to each pixel after rendering
     postprocess = lib.id;
 
@@ -46,6 +36,7 @@
 
     shading = "phong";
     recursive = false;
+    # maximum number of "bounces" (recursively traced rays)
     depth = 5;
   };
   objects = with utils; let material1 = {

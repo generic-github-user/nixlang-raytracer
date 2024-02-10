@@ -1,4 +1,3 @@
-# { settings }:
 with builtins; rec {
   settings = {
     math.sqrt.iterations = 10;
@@ -17,7 +16,6 @@ with builtins; rec {
   rot90 = { x, y }: { x = -y; y = x; };
   rot90' = { x, y }: { x = -x; y = y; };
 
-  # PointType = Type { x = Number; y = Number; z = Number; }
   Point = a: b: c: { x = a; y = b; z = c; };
   Ray = o: d: { origin' = o; dir = d; };
   rayFrom = a: b: { origin' = a; dir = subPoints b a; };
@@ -40,7 +38,6 @@ with builtins; rec {
   normals = map (normalOut center) faces; normalTo = if settings.memoizeNormals
   then memoized else normalOut center; }; in g;
   union = xs: Geometry (concatMap (x: x.faces) xs);
-  # Polygon = v:
 
   memoizeOn = f: values: let h = k: hashString "md5" (toJSON k); dict =
     listToAttrs (map (v: { name = h v; value = f v; }) values); in (key: if
@@ -51,7 +48,6 @@ with builtins; rec {
   # TODO: make this a specific case of a more general shape class
   # UnitSquare :: Shape
   UnitSquare = let d = {x = 0.5; y = 0.5;}; in
-    # map (addPoints d) (lib.take 4 (iterate rot90 d));
     map (addPoints d) (iterate rot90 4 d);
   # Square = pos: size: (translate pos) (scale size) UnitSquare;
 
@@ -62,25 +58,13 @@ with builtins; rec {
   Cube = pos: size: compose (translate pos) (scale size)
     (Geometry (map ({i, j}: map (liftPoint i j) UnitSquare)
     (lib.cartesianProductOfSets {i = [0 1 2]; j = [0 1];})));
-  # {
-    # faces = map (mapPoints (liftPoint) (Square pos size)) [0 1 2];
-    # position = origin;
-    # faces = map ({i, j}: map (liftPoint i j) UnitSquare)
-      # (lib.cartesianProductOfSets {i = [0 1 2]; j = [0 1];});
-    # faces = [UnitSquare];
-    # faces = [[origin]];
-
-    # volume = 
-  # };
   UnitCube = Cube origin 1.0;
   Sphere = pos: radius: { pos = pos; radius = radius; };
 
-  # isPoint =
   pointToList = attrValues;
   listToPoint = xs: listToAttrs (map ({fst, snd}: {name = fst; value = snd;})
     (lib.zipLists ["x" "y" "z"] xs));
 
-  # makeArrayOp = f: a: b: f [a b];
   # pointBinOp :: (Number -> Number -> Number) -> (Point3D -> Point3D -> Point3D)
   # generates an binary operation on points from the corresponding operation on numbers
   pointBinOp = f: a: b: lib.zipAttrsWith
@@ -92,10 +76,8 @@ with builtins; rec {
 
   # mapPoints :: (Point3D -> Point3D) -> Geometry -> Geometry
   mapPoints = f: object: Geometry (map (map f) object.faces);
-  # translate = delta: object: { };
   translate = delta: mapPoints (addPoints delta);
   scale = s: mapPoints (scalePoint s);
-  # rotate = theta: mapPoints (rotatePoint theta);
   # extrude =
   meanPoint = g: let p = points g; in scalePoint (1.0 / (length p)) (foldl1 addPoints p);
   points = g: lib.unique (lib.concatLists g.faces);
@@ -131,8 +113,8 @@ with builtins; rec {
   # coplanar = points: if length points <= 3 then true else;
 
   # triangulateShape :: Shape -> [Shape]
-  triangulateShape = s: if length s <= 3 then [s] else
-    genList (i: [(let h = head s; in seq h h)] ++ (lib.sublist (i+1) 2 s)) (length s - 2);
+  triangulateShape = s: if length s <= 3 then [s] else genList (i: [(let h =
+    head s; in seq h h)] ++ (lib.sublist (i+1) 2 s)) (length s - 2);
   # triangulate :: Geometry -> Geometry
   triangulate = mesh: Geometry (concatMap triangulateShape mesh.faces);
 
@@ -163,7 +145,6 @@ with builtins; rec {
   else if x < pi then sin (pi - x)
   else if x < 2 * pi then -sin (x - pi)
   else sin (fmod x (2 * pi));
-  # cos = x: sin (pi / 2 - x);
   cos = x: sin (x + pi / 2);
   tan = x: sin x / cos x;
   
@@ -177,7 +158,8 @@ with builtins; rec {
 
   genMatrix = f: nx: ny: genList (y: genList (x: f x y) nx) ny;
   # genMatrix_test = genMatrix add 5 5;
-  matmul = A: B: genMatrix (x: y: dot' (row y A) (column x B)) (length (head B)) (length A);
+  matmul = A: B: genMatrix (x: y: dot' (row y A) (column x B)) (length (head
+  B)) (length A);
   matmulN = foldl1 matmul;
   matmul_test = matmul [[1 2 3] [4 5 6]] [[7 8] [9 10] [11 12]];
 
@@ -187,8 +169,8 @@ with builtins; rec {
 
   # generate rotation matrix for each axis, get their product (left-to-right),
   # multiply by point (as column vector)
-  rotatePoint = angle: p: matmulN ((lib.zipListsWith (x: y: x y) [rotationX rotationY rotationZ] angle)
-    ++ [(transpose [(pointToList p)])]);
+  rotatePoint = angle: p: matmulN ((lib.zipListsWith (x: y: x y) [rotationX
+  rotationY rotationZ] angle) ++ [(transpose [(pointToList p)])]);
   rotatePoint_test = rotatePoint [0 0 (pi / 2)] (Point 1 0 0);
   rotatePointAbout = angle: p': composeN [(addPoints p') matrixToPoint
     (rotatePoint angle) ((lib.flip subPoints) p')];
