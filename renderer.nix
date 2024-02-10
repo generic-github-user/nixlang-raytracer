@@ -67,6 +67,7 @@ with builtins // (import ./utils.nix) ; let
     ph.ambient * scene.ambientLight + (sum (map (l: let
     lray = rayFrom' p l.position;
     reflection = vectorReflection lray.dir snormal; in # is this normalized?
+    # TODO: this is almost definitely not lazily evaluated, needs fixing
     if (firstIntersection lray).some then 0.0 else
     ph.diffuse * (df lray.dir snormal) * l.phong.diffuse + ph.specular * (power
     (lib.max 0 (df reflection (normalized (subPoints scene.camera.position p)))) ph.shininess)

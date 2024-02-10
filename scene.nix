@@ -53,10 +53,10 @@
       diffusion = 0.5;
       opacity = 1.0;
       phong = {
-        specular = 0.8;
+        specular = 1.8;
         diffuse = 0.5;
         ambient = 0.1;
-        shininess = 60;
+        shininess = 100;
       };
   }; in [
     {
@@ -67,7 +67,7 @@
       type = "mesh";
     }
     {
-      geometry = rotate [0 0 (t * 2 * pi / 30)] (scale 0.5 (union (map (p: Cube
+      geometry = rotate [0 0 (t * 2 * pi / 60)] (scale 0.5 (union (map (p: Cube
       (addPoints p (Point 1.3 2.4 0)) 1.0) (builtins.filter (p: lib.mod
       (p.x+p.y+p.z) 2 == 0) (let w = [0 1 2]; in lib.cartesianProductOfSets { x
       = w; y = w; z = w; })))));
@@ -77,10 +77,10 @@
     rec {
       position = Point 3 (-1) 2.5;
       radius = 0.1;
-      brightness = 1.0;
+      brightness = 3.0;
       type = "light";
 
-      phong.specular = 0.5;
+      phong.specular = 1.0;
       phong.diffuse = 0.6;
     }
   ];
