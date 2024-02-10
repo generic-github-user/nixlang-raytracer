@@ -167,6 +167,7 @@ with builtins; rec {
   cos = x: sin (x + pi / 2);
   tan = x: sin x / cos x;
   
+  # see https://en.wikipedia.org/wiki/Rotation_matrix#General_3D_rotations
   rotationX = t: [[1 0 0] [0 (cos t) (-sin t)] [0 (sin t) (cos t)]];
   rotationY = t: [[(cos t) 0 (sin t)] [0 1 0] [(-sin t) 0 (cos t)]];
   rotationZ = t: [[(cos t) (-sin t) 0] [(sin t) (cos t) 0] [0 0 1]];

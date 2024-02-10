@@ -47,6 +47,7 @@ with builtins // (import ./utils.nix) ; let
   # TODO: come up with a better way to lift information about operations on
   # `Maybe`s in attrsets to operations on the objects themselves (also clean up
   # the below)
+  # firstIntersection :: Ray -> Maybe Intersection
   firstIntersection = ray: let intersections' = intersections ray;
   in if intersections' == [] then None
   else Some (minBy (x: x.value.t) intersections').value;
@@ -61,17 +62,17 @@ with builtins // (import ./utils.nix) ; let
   let p = addPoints ray.origin' (scalePoint I.value.t ray.dir);
     material = I.value.obj.material;
     df = if settings.assertions.unit then dotUnit else dot;
-    # snormal = normal I.value.face; in
     snormal = I.value.obj.geometry.normalTo I.value.face; in
     # snormal = normalOut (meanPoint I.value.obj.geometry) I.value.face; in
   if shading == "default" then sum (map (l: let lray = rayFrom p l.position;
     in if intersectsAny lray then 0.0 else
     material.reflectiveness * l.brightness * (df (normalized lray.dir) snormal)) lights)
+  # see, e.g., https://en.wikipedia.org/wiki/Phong_reflection_model
   else if shading == "phong" then let ph = material.phong; in
     ph.ambient * scene.ambientLight + (sum (map (l: let
     lray = rayFrom' p l.position;
-    reflection = vectorReflection lray.dir snormal; in # is this normalized?
-    # TODO: this is almost definitely not lazily evaluated, needs fixing
+    reflection = vectorReflection lray.dir snormal; in
+    # TODO: this is almost definitely not lazily evaluated/short-circuited, needs fixing
     if intersectsAny lray then 0.0 else
     ph.diffuse * (df lray.dir snormal) * l.phong.diffuse + ph.specular * (power
     (lib.max 0 (df reflection (normalized (subPoints scene.camera.position p)))) ph.shininess)
