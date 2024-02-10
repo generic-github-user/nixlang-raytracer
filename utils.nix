@@ -10,14 +10,12 @@ with builtins; rec {
 
   lib = import <nixpkgs/lib>;
 
-  # setAt = i: x: xs: 
   # insertAt :: Int -> a -> [a] -> [a]
   # insert the element `x` at index `i`, shifting the remaining elements of `xs`
   insertAt = i: x: xs: (lib.take i xs) ++ [x] ++ (lib.drop i xs);
 
   rot90 = { x, y }: { x = -y; y = x; };
   rot90' = { x, y }: { x = -x; y = y; };
-  # rot90About 
 
   # PointType = Type { x = Number; y = Number; z = Number; }
   Point = a: b: c: { x = a; y = b; z = c; };
@@ -35,12 +33,20 @@ with builtins; rec {
 
   # liftPoint :: Int -> Number -> Point2D -> Point3D
   liftPoint = axis: w: p: listToPoint (insertAt axis w (pointToList p));
-  Geometry = faces: let memoized = memoizeOn (normalOut (meanPoint g)) faces; g = rec { inherit faces; triangulation = triangulate g; center = meanPoint g; normals = map (normalOut center) faces; normalTo = if settings.memoizeNormals then memoized else normalOut center; }; in g;
+  # ignore the abuse of notation
+  # Geometry :: [Shape] -> Geometry
+  Geometry = faces: let memoized = memoizeOn (normalOut (meanPoint g)) faces; g
+  = rec { inherit faces; triangulation = triangulate g; center = meanPoint g;
+  normals = map (normalOut center) faces; normalTo = if settings.memoizeNormals
+  then memoized else normalOut center; }; in g;
   union = xs: Geometry (concatMap (x: x.faces) xs);
   # Polygon = v:
 
-  memoizeOn = f: values: let h = k: hashString "md5" (toJSON k); dict = listToAttrs (map (v: { name = h v; value = f v; }) values); in (key: if hasAttr (h key) dict then getAttr (h key) dict else f key);
-  memoizeInts = f: n: let values = map f (lib.range 0 n); in (i: if i < n && isInt i then elemAt values i else f i);
+  memoizeOn = f: values: let h = k: hashString "md5" (toJSON k); dict =
+    listToAttrs (map (v: { name = h v; value = f v; }) values); in (key: if
+    hasAttr (h key) dict then getAttr (h key) dict else f key);
+  memoizeInts = f: n: let values = map f (lib.range 0 n); in (i: if i < n &&
+  isInt i then elemAt values i else f i);
 
   # TODO: make this a specific case of a more general shape class
   # UnitSquare :: Shape
@@ -115,7 +121,6 @@ with builtins; rec {
 
   compose = f: g: x: f (g x);
   composeN = foldl' compose lib.id;
-  # TODO: add "methods" to individual objects
 
   cross = a: b: Point (a.y*b.z - a.z*b.y) (a.z*b.x - a.x*b.z) (a.x*b.y - a.y*b.x);
   dot = a: b: foldl' add 0

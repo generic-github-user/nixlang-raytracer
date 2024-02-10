@@ -5,7 +5,6 @@ with builtins // (import ./utils.nix) ; let
   scene = (import scene') 0;
   # adapted from https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm#C++_implementation
   # intersects :: Ray -> Shape -> Maybe Number
-  # intersects__type = fn [ Ray Shape ] (Maybe.type Number);
   intersects = ray@{ origin', dir }: triangle:
     let tri = Triangle triangle;
         e1 = subPoints tri.b tri.a;
@@ -38,11 +37,12 @@ with builtins // (import ./utils.nix) ; let
   # TODO: find a cleaner way to get the surface normal out of the
   # lower-level functions...
 
-  # TODO: clean this up
   # intersections :: Ray -> [Intersection]
-  intersections = ray: let meshes = filter (o: o.type == "mesh" && !(o.hidden or false)) scene.objects; in
-  (filter (x: x.some) (map (o: (let o' = o // { geometry = o.geometry.triangulation; };
-  in Maybe.zipWith' lib.mergeAttrs (Some { obj = o'; }) (firstIntersectionWith ray o'))) meshes));
+  intersections = ray: let meshes = filter (o: o.type == "mesh" && !(o.hidden
+  or false)) scene.objects; in (filter (x: x.some) (map (o: (let o' = o // {
+    geometry = o.geometry.triangulation; }; in Maybe.zipWith' lib.mergeAttrs
+    (Some { obj = o'; }) (firstIntersectionWith ray o'))) meshes));
+
   # TODO: come up with a better way to lift information about operations on
   # `Maybe`s in attrsets to operations on the objects themselves (also clean up
   # the below)
@@ -87,14 +87,8 @@ with builtins // (import ./utils.nix) ; let
   if camera.useANSI then let i = floor (mapRange min' max' 232 255 v); in "\\033[38;5;${toString i}m█\\033[0m"
   else elemAt camera.charset (floor (clip 0.0 l (mapRange min' max' 0.0 l v)));
 
-  # test1 = intersects { origin' = origin; dir = Point 1 1 1; }
-    # [(Point 5 0 0) (Point 0 5 0) (Point 0 0 5)];
-  # test2 = triangulate UnitCube;
-  # test3 = foldl1 add [1 2 3];
-  # test4 = intersections { origin' = origin; dir = Point 1 1 1.1; };
 in let c = camera; in
   # builtins.trace (let x = frame; in deepSeq x x)
-  # frame
   (lib.concatStringsSep "\n" (map lib.concatStrings
   (map2D (compose (if c.remapColors then (getChar (min2D frame) (max2D frame)) else
   (getChar c.colorRange.low c.colorRange.high)) c.postprocess) frame)))

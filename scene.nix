@@ -5,7 +5,6 @@ t: rec {
   ambientLight = 0.1;
   camera = with utils; rec {
     position = Point 1.5 0 2.3;
-    # TODO: fix rotation bug
     angle = [(-0.7) 0 0];
 
     # distance between camera and viewplane
@@ -17,8 +16,9 @@ t: rec {
     # number of pixels to render along each axis; rays are cast from the center
     # of each pixel/cell in the viewplane
     resolution = {
-      x = 100;
-      y = builtins.floor (resolution.x * 0.25); # scale to match typical terminal character dimensions
+      x = 200;
+      # scale to match typical terminal character dimensions
+      y = builtins.floor (resolution.x * 0.25);
     };
     # if Unicode shape-matching is used for rendering, we can downsample from a
     # higher resolution to produce higher-resolution edges; otherwise, the
@@ -40,7 +40,6 @@ t: rec {
     # used if remapColors is disabled
     colorRange.low = 0.0;
     colorRange.high = 0.1;
-    # charset = lib.stringToCharacters "░▒▓█";
     charset = [" " "░" "▒" "▓" "█"];
     # charset = lib.stringToCharacters "0123456789";
     useANSI = true;
@@ -54,29 +53,18 @@ t: rec {
       diffusion = 0.5;
       opacity = 1.0;
       phong = {
-        specular = 0.5;
+        specular = 0.8;
         diffuse = 0.5;
         ambient = 0.1;
         shininess = 60;
       };
   }; in [
     {
-      # geometry.faces = map (i: ) [0 1 2];
-      # TODO: why does string concatenation fail with index error when this cube is moved...?
-      # TODO: clean up interface for rotating objects (and other method-like functions)
-      geometry = let c = Cube (Point 1.0 1.6 0) 1.5; a = pi / 4; b = [0 0 (t * 0.1)]; in rotate b c;
-      # geometry = Cube (Point 1.5 3.0 0) 1.5;
-      # geometry = Cube (Point 0 0 0) 1;
+      geometry = let c = Cube (Point 1.0 1.6 0) 1.5; a = pi / 4; b = [0 0 (t * 0.1)];
+        in rotate b c;
       material = material1;
       hidden = true;
-
       type = "mesh";
-
-      # test = UnitSquare;
-      # test = addPoints (Point 1 2 3) (Point 4 5 6);
-      test = cross (Point 0.7 0 0) (Point 1 1 0);
-      test2 = dot (Point 1 1 2) (Point 2 2 2);
-      # visibleFromCamera
     }
     {
       geometry = rotate [0 0 (pi / 8)] (scale 0.5 (union (map (p: Cube
@@ -87,11 +75,8 @@ t: rec {
       type = "mesh";
     }
     rec {
-      # position = Point 5 (-3) 0;
       position = Point 3 (-1) 2.5;
-      # position = camera.position;
       radius = 0.1;
-      # TODO: automatically promote values to floats where needed
       brightness = 1.0;
       type = "light";
 
