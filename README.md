@@ -6,7 +6,7 @@ A simple raytracer written in the [Nix configuration language](https://nixos.org
 
 An example scene description (lighting, camera, objects, rendering settings) is given in `scene.nix`, with the renderer itself in `renderer.nix` and `utils.nix` (miscellaneous helper functions and geometry tools). Most of the settings should be self-evident, but those that may not be are (hopefully) commented. No particular units are imposed on geometry/focal length/other distances.
 
-In ANSI mode (`scene.camera.useANSI == true`), something like the following can be used to render a single frame to the terminal (if the setting is disabled, the `printf` invocation can be omitted since there are no escape codes to interpret):
+You will of course need the [Nix package manager](https://nixos.org/download#download-nix) installed in some capacity to use this project (though running NixOS is not necessary). In ANSI mode (`scene.camera.useANSI == true`), something like the following can be used to render a single frame to the terminal (if the setting is disabled, the `printf` invocation can be omitted since there are no escape codes to interpret):
 
 ```sh
 printf "%b\n" $(nix --extra-experimental-features nix-command eval --impure --expr "(import ./renderer.nix) { scene' = ./scene.nix; }" --raw)
